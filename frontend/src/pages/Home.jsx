@@ -20,14 +20,18 @@ const Home = () => {
       setError(null)
       const [servicesRes, professionalsRes] = await Promise.all([
         api.get('/services?limit=6').catch(err => {
-          // Если это мок-ошибка, игнорируем
-          if (err.isMock) return err
+          // Если это мок-ответ или реальная ошибка, обрабатываем
+          if (err.mockResponse || err.isMock) {
+            return { data: err.data || [] }
+          }
           console.error('Error fetching services:', err)
           return { data: [] }
         }),
         api.get('/users/professionals?limit=4').catch(err => {
-          // Если это мок-ошибка, игнорируем
-          if (err.isMock) return err
+          // Если это мок-ответ или реальная ошибка, обрабатываем
+          if (err.mockResponse || err.isMock) {
+            return { data: err.data || [] }
+          }
           console.error('Error fetching professionals:', err)
           return { data: [] }
         })
