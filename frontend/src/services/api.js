@@ -25,7 +25,9 @@ if (token) {
 
 // Перехватчик для использования мок-данных
 // В production всегда используем мок-данные
-const isProduction = import.meta.env.MODE === 'production' || import.meta.env.PROD
+const isProduction = import.meta.env.MODE === 'production' || 
+                     import.meta.env.PROD || 
+                     (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
 const shouldUseMockData = USE_MOCK_DATA || isProduction
 
 if (shouldUseMockData) {
@@ -173,9 +175,14 @@ if (shouldUseMockData) {
     }
   )
   
-  if (import.meta.env.DEV) {
-    console.log('🔧 Мок-данные включены. Для отключения: localStorage.setItem("useMockData", "false")')
-  }
+  // Логирование для отладки
+  console.log('🔧 API Mock Interceptor:', {
+    USE_MOCK_DATA,
+    shouldUseMockData,
+    isProduction,
+    mode: import.meta.env.MODE,
+    hostname: typeof window !== 'undefined' ? window.location.hostname : 'unknown'
+  })
 }
 
 export default api
