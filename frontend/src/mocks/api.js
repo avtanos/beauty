@@ -4,11 +4,24 @@ import { mockServices, mockProfessionals, mockBookings, mockReviews } from './da
 // Переменная для включения/выключения мок-данных
 // В production всегда используем мок-данные
 // В development можно управлять через localStorage
-const isProduction = import.meta.env.MODE === 'production' || import.meta.env.PROD
-const devMockSetting = localStorage.getItem('useMockData')
+const isProduction = import.meta.env.MODE === 'production' || 
+                     import.meta.env.PROD || 
+                     (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
+const devMockSetting = typeof window !== 'undefined' ? localStorage.getItem('useMockData') : null
 const useMockInDev = devMockSetting === null || devMockSetting === 'true'
 
 export const USE_MOCK_DATA = isProduction || (import.meta.env.DEV && useMockInDev)
+
+// Логирование для отладки
+if (typeof window !== 'undefined') {
+  console.log('📦 Mock API Config:', {
+    USE_MOCK_DATA,
+    isProduction,
+    mode: import.meta.env.MODE,
+    hostname: window.location.hostname,
+    url: window.location.href
+  })
+}
 
 // Функция для задержки (имитация сетевого запроса)
 const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms))
