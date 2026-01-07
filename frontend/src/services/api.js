@@ -54,7 +54,8 @@ if (shouldUseMockData) {
         if (url.includes('/users/professionals')) {
           const params = new URLSearchParams(url.split('?')[1] || '')
           const result = await mockApi.getProfessionals(Object.fromEntries(params))
-          return Promise.reject({ mockResponse: true, data: result.data })
+          console.log('📦 Mock: getProfessionals', params.toString(), result.data)
+          return Promise.reject({ mockResponse: true, data: result.data, config })
         }
         
         // Мастер по ID
@@ -166,11 +167,22 @@ if (shouldUseMockData) {
   
   // Обработка мок-ответов
   api.interceptors.response.use(
-    response => response,
+    response => {
+      // Если это обычный ответ, просто возвращаем его
+      return response
+    },
     error => {
+      // Если это мок-ответ (перехваченный запрос), возвращаем его как успешный
       if (error.mockResponse) {
-        return Promise.resolve({ data: error.data, status: error.status || 200 })
+        console.log('✅ Mock response intercepted:', error.data)
+        return Promise.resolve({ 
+          data: error.data, 
+          status: error.status || 200,
+          config: error.config
+        })
       }
+      // Для реальных ошибок логируем и пробрасываем дальше
+      console.warn('❌ Real API error:', error.message)
       return Promise.reject(error)
     }
   )
