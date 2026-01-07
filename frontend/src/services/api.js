@@ -25,7 +25,8 @@ if (token) {
 
 // Перехватчик для использования мок-данных
 // В production всегда используем мок-данные
-const shouldUseMockData = USE_MOCK_DATA || import.meta.env.PROD
+const isProduction = import.meta.env.MODE === 'production' || import.meta.env.PROD
+const shouldUseMockData = USE_MOCK_DATA || isProduction
 
 if (shouldUseMockData) {
   api.interceptors.request.use(async (config) => {

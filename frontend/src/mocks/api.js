@@ -3,8 +3,12 @@ import { mockServices, mockProfessionals, mockBookings, mockReviews } from './da
 
 // Переменная для включения/выключения мок-данных
 // В production всегда используем мок-данные
-export const USE_MOCK_DATA = import.meta.env.PROD || 
-  (import.meta.env.DEV && (localStorage.getItem('useMockData') === 'true' || !localStorage.getItem('useMockData')))
+// В development можно управлять через localStorage
+const isProduction = import.meta.env.MODE === 'production' || import.meta.env.PROD
+const devMockSetting = localStorage.getItem('useMockData')
+const useMockInDev = devMockSetting === null || devMockSetting === 'true'
+
+export const USE_MOCK_DATA = isProduction || (import.meta.env.DEV && useMockInDev)
 
 // Функция для задержки (имитация сетевого запроса)
 const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms))
