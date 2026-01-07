@@ -1,0 +1,130 @@
+/* 3D иконки стили */
+.icon-3d {
+  display: inline-block;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.icon-3d:hover {
+  transform: translateY(-5px) rotateX(10deg) rotateY(5deg);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+}
+
+.icon-3d-large {
+  font-size: 4rem;
+  transform: perspective(1000px) rotateX(15deg) rotateY(-10deg);
+  text-shadow: 
+    2px 2px 0px rgba(0, 0, 0, 0.1),
+    4px 4px 0px rgba(0, 0, 0, 0.05),
+    0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.icon-3d-medium {
+  font-size: 3rem;
+  transform: perspective(800px) rotateX(10deg);
+  text-shadow: 
+    1px 1px 0px rgba(0, 0, 0, 0.1),
+    2px 2px 0px rgba(0, 0, 0, 0.05),
+    0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.icon-3d-small {
+  font-size: 2rem;
+  transform: perspective(600px) rotateX(5deg);
+  text-shadow: 
+    1px 1px 0px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Градиентные 3D иконки */
+.icon-3d-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.icon-3d-gradient-beauty {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.icon-3d-gradient-spa {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.icon-3d-gradient-massage {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Анимация для 3D иконок */
+@keyframes float-3d {
+  0%, 100% {
+    transform: perspective(1000px) rotateX(15deg) rotateY(-10deg) translateY(0);
+  }
+  50% {
+    transform: perspective(1000px) rotateX(15deg) rotateY(-10deg) translateY(-10px);
+  }
+}
+
+.icon-3d-animated {
+  animation: float-3d 3s ease-in-out infinite;
+}
+
+/* 3D карточки с иконками */
+.category-card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+  perspective: 1000px;
+}
+
+.category-card-3d:hover {
+  transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
+}
+
+.category-card-3d .icon-3d {
+  transform: translateZ(20px);
+}
+
+/* Эмодзи с 3D эффектом */
+.emoji-3d {
+  display: inline-block;
+  font-size: 3rem;
+  transform: perspective(1000px) rotateX(20deg) rotateY(-15deg);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+  transition: transform 0.3s ease;
+}
+
+.emoji-3d:hover {
+  transform: perspective(1000px) rotateX(20deg) rotateY(-15deg) scale(1.1) translateY(-5px);
+}
+
+/* Иконки с объемным эффектом */
+.icon-volumetric {
+  position: relative;
+  display: inline-block;
+}
+
+.icon-volumetric::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  filter: blur(10px);
+  opacity: 0.5;
+  z-index: -1;
+  transform: translateZ(-20px);
+}
+

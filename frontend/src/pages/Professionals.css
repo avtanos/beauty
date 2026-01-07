@@ -1,0 +1,18 @@
+.professionals-page {
+  padding: 2rem 0;
+  min-height: 60vh;
+}
+
+.page-subtitle {
+  text-align: center;
+  color: var(--text-light);
+  margin-bottom: 3rem;
+  font-size: 1.1rem;
+}
+
+.professional-experience {
+  margin-top: 0.5rem;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
