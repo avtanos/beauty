@@ -1,0 +1,400 @@
+.beauty-tracker-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem 1rem;
+}
+
+.beauty-tracker-hero {
+  text-align: center;
+  color: white;
+  padding: 4rem 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-content h1 {
+  font-size: 3rem;
+  margin: 1rem 0;
+  font-weight: 700;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.hero-icon {
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.beauty-tracker-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.tracker-section {
+  margin-bottom: 3rem;
+}
+
+.tracker-section h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.tracker-section p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #666;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.benefit-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-5px);
+}
+
+.benefit-icon {
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.demo-section {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 12px;
+}
+
+.demo-day-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.demo-day-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.demo-day-header h3 {
+  font-size: 1.5rem;
+  color: #667eea;
+}
+
+.demo-focus {
+  font-size: 1.1rem;
+  color: #555;
+  font-style: italic;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f0f0f0;
+  border-radius: 8px;
+}
+
+.demo-habits h4 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.demo-habits ul {
+  list-style: none;
+  padding: 0;
+}
+
+.demo-habits li {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.habit-category {
+  background: #667eea;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.demo-note {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 4px;
+  color: #856404;
+  font-size: 0.9rem;
+}
+
+.cta-section {
+  text-align: center;
+}
+
+.cta-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 3rem;
+  border-radius: 20px;
+}
+
+.cta-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.cta-card h2 {
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.cta-card p {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2rem;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: white;
+  color: #667eea;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cta-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.cta-button.secondary {
+  background: transparent;
+  color: white;
+  border: 2px solid white;
+}
+
+.cta-button.secondary:hover {
+  background: white;
+  color: #667eea;
+}
+
+.beauty-tracker-loading {
+  text-align: center;
+  padding: 4rem;
+  font-size: 1.5rem;
+  color: #667eea;
+}
+
+@media (max-width: 768px) {
+  .beauty-tracker-page {
+    padding: 1.5rem 0.75rem;
+  }
+  
+  .beauty-tracker-hero {
+    padding: 3rem 1rem;
+  }
+  
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .beauty-tracker-content {
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+  
+  .tracker-section {
+    margin-bottom: 2rem;
+  }
+  
+  .tracker-section h2 {
+    font-size: 1.5rem;
+  }
+  
+  .tracker-section p {
+    font-size: 1rem;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .benefit-card {
+    padding: 1.25rem;
+  }
+  
+  .demo-section {
+    padding: 1.5rem;
+  }
+  
+  .demo-day-card {
+    padding: 1.5rem;
+  }
+  
+  .demo-day-header h3 {
+    font-size: 1.25rem;
+  }
+  
+  .demo-focus {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+  
+  .cta-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .cta-icon {
+    font-size: 2.5rem;
+  }
+  
+  .cta-card h2 {
+    font-size: 1.5rem;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .cta-button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .beauty-tracker-page {
+    padding: 1rem 0.5rem;
+  }
+  
+  .beauty-tracker-hero {
+    padding: 2rem 0.75rem;
+  }
+  
+  .hero-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .beauty-tracker-content {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+  
+  .tracker-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .tracker-section h2 {
+    font-size: 1.25rem;
+  }
+  
+  .tracker-section p {
+    font-size: 0.9rem;
+  }
+  
+  .benefit-card {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .demo-section {
+    padding: 1rem;
+  }
+  
+  .demo-day-card {
+    padding: 1rem;
+  }
+  
+  .demo-day-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .demo-day-header h3 {
+    font-size: 1.15rem;
+  }
+  
+  .demo-focus {
+    font-size: 0.9rem;
+    padding: 0.65rem;
+  }
+  
+  .habit-category {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+  }
+  
+  .cta-card {
+    padding: 1.5rem 1rem;
+  }
+  
+  .cta-icon {
+    font-size: 2rem;
+  }
+  
+  .cta-card h2 {
+    font-size: 1.25rem;
+  }
+  
+  .cta-card p {
+    font-size: 0.9rem;
+  }
+  
+  .cta-button {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.95rem;
+  }
+}

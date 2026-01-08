@@ -65,5 +65,19 @@ input, textarea, select {
   .container {
     padding: 0 15px;
   }
+  
+  body {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+  
+  body {
+    font-size: 14px;
+  }
 }
 

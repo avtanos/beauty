@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useLanguage } from '../contexts/LanguageContext'
 import api from '../services/api'
 import './Services.css'
 
 const Services = () => {
+  const { t, language } = useLanguage()
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchParams] = useSearchParams()
@@ -26,26 +28,38 @@ const Services = () => {
   }
 
   const categories = [
-    { value: 'beauty', label: 'Красота' },
-    { value: 'spa', label: 'Спа' },
-    { value: 'massage', label: 'Массаж' },
-    { value: 'haircut', label: 'Стрижка' },
-    { value: 'nail_care', label: 'Уход за ногтями' },
-    { value: 'cleaning', label: 'Уборка' },
-    { value: 'repair', label: 'Ремонт' },
+    { value: 'beauty' },
+    { value: 'spa' },
+    { value: 'massage' },
+    { value: 'haircut' },
+    { value: 'nail_care' },
+    { value: 'cleaning' },
+    { value: 'repair' },
   ]
+  
+  const getServiceName = (service) => {
+    if (language === 'ru' && service.name_ru) return service.name_ru
+    if (language === 'ky' && service.name_ky) return service.name_ky
+    return service.name
+  }
+  
+  const getServiceDescription = (service) => {
+    if (language === 'ru' && service.description_ru) return service.description_ru
+    if (language === 'ky' && service.description_ky) return service.description_ky
+    return service.description
+  }
 
   return (
     <div className="services-page">
       <div className="container">
-        <h1 className="page-title">Услуги</h1>
+        <h1 className="page-title">{t('services.title')}</h1>
         
         <div className="filters">
           <Link
             to="/services"
             className={`filter-btn ${!category ? 'active' : ''}`}
           >
-            Все
+            {language === 'ru' ? 'Все' : language === 'ky' ? 'Баары' : 'All'}
           </Link>
           {categories.map((cat) => (
             <Link
@@ -53,16 +67,16 @@ const Services = () => {
               to={`/services?category=${cat.value}`}
               className={`filter-btn ${category === cat.value ? 'active' : ''}`}
             >
-              {cat.label}
+              {t(`services.categories.${cat.value}`)}
             </Link>
           ))}
         </div>
 
         {loading ? (
-          <div className="loading">Загрузка...</div>
+          <div className="loading">{t('common.loading')}</div>
         ) : services.length === 0 ? (
           <div className="empty-state">
-            <p>Услуги не найдены</p>
+            <p>{language === 'ru' ? 'Услуги не найдены' : language === 'ky' ? 'Кызматтар табылган жок' : 'No services found'}</p>
           </div>
         ) : (
           <div className="services-grid">
@@ -74,25 +88,25 @@ const Services = () => {
               >
                 {service.image_url && (
                   <div className="service-image">
-                    <img src={service.image_url} alt={service.name} />
+                    <img src={service.image_url} alt={getServiceName(service)} />
                   </div>
                 )}
                 <div className="service-content">
-                  <h3>{service.name_ru || service.name}</h3>
+                  <h3>{getServiceName(service)}</h3>
                   <p className="service-description">
-                    {service.description_ru || service.description}
+                    {getServiceDescription(service)}
                   </p>
                   <div className="service-footer">
                     <span className="service-price">
-                      {service.price} сом
+                      {service.price} {language === 'ky' ? 'сом' : 'сом'}
                     </span>
                     <span className="service-duration">
-                      {service.duration_minutes} мин
+                      {service.duration_minutes} {t('services.minutes')}
                     </span>
                   </div>
                   {service.professional && (
                     <div className="service-professional">
-                      Мастер: {service.professional.full_name}
+                      {t('services.master')}: {service.professional.full_name}
                     </div>
                   )}
                 </div>

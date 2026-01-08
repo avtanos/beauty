@@ -30,6 +30,16 @@
   justify-content: center;
 }
 
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-dark);
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+}
+
 .navbar-menu {
   display: flex;
   align-items: center;
@@ -89,18 +99,93 @@
   color: var(--primary-color);
 }
 
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: var(--bg-light);
+}
+
+.language-select {
+  border: none;
+  background: transparent;
+  color: var(--text-dark);
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  font-size: 0.9rem;
+  padding: 0.25rem;
+}
+
 @media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+  
   .navbar-menu {
-    gap: 1rem;
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 1rem 0;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 999;
+    max-height: calc(100vh - 70px);
+    overflow-y: auto;
   }
   
-  .nav-link {
-    font-size: 0.9rem;
+  .navbar-menu.mobile-open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
   }
   
-  .btn-primary {
-    padding: 0.4rem 1rem;
-    font-size: 0.9rem;
+  .navbar-menu .nav-link {
+    display: block;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1rem;
+  }
+  
+  .navbar-menu .nav-link:last-child {
+    border-bottom: none;
+  }
+  
+  .navbar-menu .user-menu {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0 1.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .navbar-menu .user-menu .nav-link,
+  .navbar-menu .user-menu .btn-logout {
+    width: 100%;
+    text-align: left;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .navbar-menu .btn-primary {
+    margin: 1rem 1.5rem;
+    width: calc(100% - 3rem);
+    text-align: center;
+  }
+  
+  .navbar-menu .language-selector {
+    margin: 1rem 1.5rem;
+    justify-content: center;
   }
   
   .logo-text {
@@ -109,12 +194,21 @@
 }
 
 @media (max-width: 480px) {
-  .navbar-menu {
-    gap: 0.5rem;
+  .navbar {
+    padding: 0.75rem 0;
   }
   
-  .nav-link:not(.user-name) {
-    display: none;
+  .navbar-logo {
+    font-size: 1.25rem;
+  }
+  
+  .logo-icon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .navbar-menu {
+    top: 60px;
   }
 }
 

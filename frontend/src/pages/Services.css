@@ -46,17 +46,48 @@
 }
 
 @media (max-width: 768px) {
+  .services-page {
+    padding: 1.5rem 0;
+  }
+  
   .page-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .filters {
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .filter-btn {
+    padding: 0.45rem 1.25rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .services-page {
+    padding: 1rem 0;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
   }
   
   .filters {
     gap: 0.5rem;
+    margin-bottom: 1rem;
   }
   
   .filter-btn {
     padding: 0.4rem 1rem;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+  }
+  
+  .empty-state {
+    padding: 2rem 1rem;
   }
 }
 

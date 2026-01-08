@@ -15,6 +15,8 @@ import BookingForm from './pages/BookingForm'
 import AdminDashboard from './pages/AdminDashboard'
 import ProfessionalCabinet from './pages/ProfessionalCabinet'
 import ClientCabinet from './pages/ClientCabinet'
+import BeautyTracker from './pages/BeautyTracker'
+import TrackerPage from './pages/TrackerPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import MockDataToggle from './components/MockDataToggle'
 import './App.css'
@@ -32,6 +34,7 @@ function App() {
               <Route path="/services/:id" element={<ServiceDetail />} />
               <Route path="/professionals" element={<Professionals />} />
               <Route path="/professionals/:id" element={<ProfessionalDetail />} />
+              <Route path="/beauty-tracker" element={<BeautyTracker />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route
@@ -79,6 +82,22 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ClientCabinet />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/client/tracker"
+                element={
+                  <ProtectedRoute>
+                    <TrackerPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/professional/tracker"
+                element={
+                  <ProtectedRoute>
+                    <TrackerPage />
                   </ProtectedRoute>
                 }
               />

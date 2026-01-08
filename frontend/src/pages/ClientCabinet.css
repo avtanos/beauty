@@ -169,8 +169,57 @@
 }
 
 @media (max-width: 968px) {
+  .client-cabinet {
+    padding: 1rem 0;
+  }
+  
   .professionals-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .booking-card-client,
+  .review-card-client {
+    padding: 1.25rem;
+  }
+  
+  .modal-overlay {
+    padding: 1rem;
+  }
+  
+  .modal-content {
+    padding: 1.5rem;
+    margin: 0;
+    max-height: calc(100vh - 2rem);
+  }
+  
+  .rating-star {
+    font-size: 1.5rem;
+    padding: 0.35rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-card-client,
+  .review-card-client {
+    padding: 1rem;
+  }
+  
+  .professional-card {
+    padding: 1.25rem;
+  }
+  
+  .professional-avatar {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .modal-content {
+    padding: 1rem;
+  }
+  
+  .rating-star {
+    font-size: 1.25rem;
+    padding: 0.25rem;
   }
 }
 

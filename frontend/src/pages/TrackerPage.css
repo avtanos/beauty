@@ -1,0 +1,541 @@
+.tracker-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem 1rem;
+}
+
+.tracker-loading {
+  text-align: center;
+  padding: 4rem;
+  font-size: 1.5rem;
+  color: #667eea;
+}
+
+.tracker-start {
+  max-width: 600px;
+  margin: 4rem auto;
+}
+
+.start-card {
+  background: white;
+  padding: 3rem;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.start-icon {
+  color: #667eea;
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.start-card h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.start-card p {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.start-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  font-weight: 600;
+}
+
+.start-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+}
+
+.tracker-header {
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.header-icon {
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.tracker-header h1 {
+  font-size: 2rem;
+  color: #333;
+  margin: 0;
+}
+
+.header-subtitle {
+  color: #666;
+  margin: 0.5rem 0 0 0;
+}
+
+.error-banner {
+  max-width: 1200px;
+  margin: 0 auto 1rem;
+  background: #fee;
+  color: #c33;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 4px solid #c33;
+}
+
+.error-banner button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #c33;
+}
+
+.progress-section {
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+}
+
+.progress-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.progress-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-icon {
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.progress-label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.progress-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.current-day-section {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.day-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.day-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.day-icon {
+  color: #667eea;
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+}
+
+.day-header h2 {
+  font-size: 2rem;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.day-focus {
+  font-size: 1.1rem;
+  color: #666;
+  font-style: italic;
+  margin: 0;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.habits-list {
+  margin-bottom: 2rem;
+}
+
+.habits-list h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.habit-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.habit-item:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+}
+
+.habit-item.completed {
+  background: #d4edda;
+  border-color: #28a745;
+}
+
+.habit-check {
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.check-icon {
+  color: #667eea;
+  transition: color 0.3s ease;
+}
+
+.habit-item.completed .check-icon {
+  color: #28a745;
+}
+
+.habit-content {
+  flex: 1;
+}
+
+.habit-header {
+  margin-bottom: 0.5rem;
+}
+
+.habit-category {
+  display: inline-block;
+  background: #667eea;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.habit-item.completed .habit-category {
+  background: #28a745;
+}
+
+.habit-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.habit-description {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.day-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1.5rem;
+  border-top: 2px solid #f0f0f0;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-button.skip {
+  background: #ffc107;
+  color: #333;
+}
+
+.action-button.skip:hover:not(:disabled) {
+  background: #ffb300;
+  transform: translateY(-2px);
+}
+
+.action-button.skip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-button.complete {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.action-button.complete:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.locked-message,
+.completed-message,
+.skipped-message {
+  text-align: center;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.locked-message {
+  color: #666;
+}
+
+.completed-message {
+  background: #d4edda;
+  color: #155724;
+}
+
+.completed-icon {
+  font-size: 3rem;
+  color: #28a745;
+  margin-bottom: 1rem;
+}
+
+.skipped-message {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.skipped-icon {
+  font-size: 3rem;
+  color: #ffc107;
+  margin-bottom: 1rem;
+}
+
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #c33;
+}
+
+.no-day-message {
+  text-align: center;
+  padding: 4rem;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .tracker-page {
+    padding: 1rem;
+  }
+  
+  .tracker-header {
+    padding: 1.5rem;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .tracker-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .start-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .start-card h1 {
+    font-size: 2rem;
+  }
+  
+  .start-card p {
+    font-size: 1rem;
+  }
+  
+  .progress-card {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
+  
+  .progress-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .day-card {
+    padding: 1.5rem;
+  }
+  
+  .day-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .day-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .day-focus {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+  
+  .habits-list h3 {
+    font-size: 1.25rem;
+  }
+  
+  .habit-item {
+    padding: 1.25rem;
+  }
+  
+  .habit-title {
+    font-size: 1rem;
+  }
+  
+  .habit-description {
+    font-size: 0.9rem;
+  }
+  
+  .day-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .action-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .tracker-page {
+    padding: 0.75rem;
+  }
+  
+  .tracker-header {
+    padding: 1rem;
+  }
+  
+  .tracker-header h1 {
+    font-size: 1.25rem;
+  }
+  
+  .header-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .start-card {
+    padding: 1.5rem 1rem;
+  }
+  
+  .start-card h1 {
+    font-size: 1.5rem;
+  }
+  
+  .start-card p {
+    font-size: 0.9rem;
+  }
+  
+  .start-button {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .progress-card {
+    padding: 1rem;
+  }
+  
+  .progress-value {
+    font-size: 1.25rem;
+  }
+  
+  .day-card {
+    padding: 1rem;
+  }
+  
+  .day-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .day-focus {
+    font-size: 0.9rem;
+    padding: 0.65rem;
+  }
+  
+  .habit-item {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .habit-check {
+    align-self: flex-start;
+  }
+  
+  .habit-category {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+  }
+  
+  .habit-title {
+    font-size: 0.95rem;
+  }
+  
+  .habit-description {
+    font-size: 0.85rem;
+  }
+}

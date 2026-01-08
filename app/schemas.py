@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
-from app.models import UserRole, BookingStatus, ServiceCategory
+from app.models import UserRole, BookingStatus, ServiceCategory, HabitCategory, ProgramStatus, DayStatus
 
 # User Schemas
 class UserBase(BaseModel):
@@ -135,3 +135,125 @@ class ReviewResponse(ReviewBase):
     class Config:
         from_attributes = True
 
+# Beauty Tracker Schemas
+class TrackerHabitBase(BaseModel):
+    category: HabitCategory
+    title: str
+    title_ru: Optional[str] = None
+    title_ky: Optional[str] = None
+    description: Optional[str] = None
+    description_ru: Optional[str] = None
+    description_ky: Optional[str] = None
+
+class TrackerHabitCreate(TrackerHabitBase):
+    pass
+
+class TrackerHabitUpdate(BaseModel):
+    category: Optional[HabitCategory] = None
+    title: Optional[str] = None
+    title_ru: Optional[str] = None
+    title_ky: Optional[str] = None
+    description: Optional[str] = None
+    description_ru: Optional[str] = None
+    description_ky: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class TrackerHabitResponse(TrackerHabitBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class TrackerProgramTemplateBase(BaseModel):
+    name: str
+    version: Optional[int] = 1
+
+class TrackerProgramTemplateCreate(TrackerProgramTemplateBase):
+    pass
+
+class TrackerProgramTemplateResponse(TrackerProgramTemplateBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class TrackerProgramDayBase(BaseModel):
+    day_number: int
+    focus_text: Optional[str] = None
+    focus_text_ru: Optional[str] = None
+    focus_text_ky: Optional[str] = None
+
+class TrackerProgramDayCreate(TrackerProgramDayBase):
+    program_template_id: int
+
+class TrackerProgramDayResponse(TrackerProgramDayBase):
+    id: int
+    program_template_id: int
+    created_at: datetime
+    habits: Optional[List[TrackerHabitResponse]] = None
+    
+    class Config:
+        from_attributes = True
+
+class TrackerUserProgramResponse(BaseModel):
+    id: int
+    user_id: int
+    program_template_id: int
+    started_at: datetime
+    finished_at: Optional[datetime] = None
+    status: ProgramStatus
+    allowed_skips: int
+    used_skips: int
+    template: Optional[TrackerProgramTemplateResponse] = None
+    
+    class Config:
+        from_attributes = True
+
+class TrackerUserDayLogResponse(BaseModel):
+    id: int
+    habit_id: int
+    completed: bool
+    completed_at: Optional[datetime] = None
+    habit: Optional[TrackerHabitResponse] = None
+    
+    class Config:
+        from_attributes = True
+
+class TrackerUserDayResponse(BaseModel):
+    id: int
+    day_number: int
+    status: DayStatus
+    opened_at: Optional[datetime] = None
+    closed_at: Optional[datetime] = None
+    focus_text: Optional[str] = None
+    focus_text_ru: Optional[str] = None
+    focus_text_ky: Optional[str] = None
+    habits: Optional[List[dict]] = None  # List of {habit, completed, log_id}
+    
+    class Config:
+        from_attributes = True
+
+class TrackerProgressResponse(BaseModel):
+    total_days: int
+    completed_days: int
+    skipped_days: int
+    current_streak: int
+    completion_percentage: float
+    current_day: Optional[int] = None
+    used_skips: int
+    allowed_skips: int
+
+class TrackerPublicInfo(BaseModel):
+    title: str
+    title_ru: Optional[str] = None
+    title_ky: Optional[str] = None
+    description: str
+    description_ru: Optional[str] = None
+    description_ky: Optional[str] = None
+    benefits: List[str]
+    benefits_ru: Optional[List[str]] = None
+    benefits_ky: Optional[List[str]] = None

@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useLanguage } from '../contexts/LanguageContext'
+import { useNavigate, Link } from 'react-router-dom'
 import api from '../services/api'
 import {
   BarChart3, Briefcase, Calendar, Star, DollarSign, Plus,
-  Edit, Trash2, Check, X, Clock, TrendingUp, Users
+  Edit, Trash2, Check, X, Clock, TrendingUp, Users, Sparkles
 } from 'lucide-react'
 import './ProfessionalCabinet.css'
 
 const ProfessionalCabinet = () => {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [stats, setStats] = useState(null)
@@ -102,7 +104,7 @@ const ProfessionalCabinet = () => {
         <div className="cabinet-sidebar">
           <div className="cabinet-header">
             <Briefcase size={32} className="cabinet-logo" />
-            <h2>Кабинет мастера</h2>
+            <h2>{t('nav.masterCabinet')}</h2>
           </div>
           <nav className="cabinet-nav">
             <button
@@ -110,35 +112,42 @@ const ProfessionalCabinet = () => {
               onClick={() => setActiveTab('dashboard')}
             >
               <BarChart3 size={20} />
-              <span>Дашборд</span>
+              <span>{t('professionalCabinet.dashboard')}</span>
             </button>
             <button
               className={activeTab === 'services' ? 'active' : ''}
               onClick={() => setActiveTab('services')}
             >
               <Briefcase size={20} />
-              <span>Мои услуги</span>
+              <span>{t('professionalCabinet.myServices')}</span>
             </button>
             <button
               className={activeTab === 'bookings' ? 'active' : ''}
               onClick={() => setActiveTab('bookings')}
             >
               <Calendar size={20} />
-              <span>Бронирования</span>
+              <span>{t('professionalCabinet.bookings')}</span>
             </button>
             <button
               className={activeTab === 'reviews' ? 'active' : ''}
               onClick={() => setActiveTab('reviews')}
             >
               <Star size={20} />
-              <span>Отзывы</span>
+              <span>{t('professionalCabinet.reviews')}</span>
             </button>
+            <Link
+              to="/professional/tracker"
+              className="cabinet-nav-link"
+            >
+              <Sparkles size={20} />
+              <span>{t('professionalCabinet.tracker')}</span>
+            </Link>
           </nav>
         </div>
 
         <div className="cabinet-content">
           {loading ? (
-            <div className="loading">Загрузка...</div>
+            <div className="loading">{t('common.loading')}</div>
           ) : (
             <>
               {activeTab === 'dashboard' && stats && (

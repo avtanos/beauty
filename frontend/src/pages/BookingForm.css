@@ -106,12 +106,75 @@
 }
 
 @media (max-width: 968px) {
+  .booking-form-page {
+    padding: 1.5rem 0;
+  }
+  
   .booking-form-content {
     grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-top: 1.5rem;
   }
   
   .service-summary {
     position: static;
+    padding: 1.5rem;
+  }
+  
+  .service-summary h2 {
+    font-size: 1.25rem;
+  }
+  
+  .booking-form {
+    padding: 1.5rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-form-page {
+    padding: 1rem 0;
+  }
+  
+  .booking-form-content {
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  
+  .service-summary,
+  .booking-form {
+    padding: 1rem;
+  }
+  
+  .service-summary h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+  }
+  
+  .summary-item {
+    padding: 0.75rem 0;
+    font-size: 0.9rem;
+  }
+  
+  .summary-item .price {
+    font-size: 1.1rem;
+  }
+  
+  .booking-form .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .booking-form .form-group input,
+  .booking-form .form-group textarea {
+    padding: 0.65rem;
+    font-size: 0.95rem;
   }
 }
 

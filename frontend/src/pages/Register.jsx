@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useLanguage } from '../contexts/LanguageContext'
 import './Auth.css'
 
 const Register = () => {
@@ -14,6 +15,7 @@ const Register = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { register } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -32,7 +34,7 @@ const Register = () => {
       await register(formData)
       navigate('/')
     } catch (err) {
-      setError('Ошибка регистрации. Проверьте данные.')
+      setError(t('auth.registerError'))
     } finally {
       setLoading(false)
     }
@@ -42,22 +44,22 @@ const Register = () => {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-card">
-          <h1>Регистрация</h1>
+          <h1>{t('auth.register')}</h1>
           {error && <div className="error-message">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Имя</label>
+              <label>{t('auth.fullName')}</label>
               <input
                 type="text"
                 name="full_name"
                 value={formData.full_name}
                 onChange={handleChange}
                 required
-                placeholder="Иван Иванов"
+                placeholder={t('auth.fullName')}
               />
             </div>
             <div className="form-group">
-              <label>Email</label>
+              <label>{t('auth.email')}</label>
               <input
                 type="email"
                 name="email"
@@ -68,7 +70,7 @@ const Register = () => {
               />
             </div>
             <div className="form-group">
-              <label>Телефон</label>
+              <label>{t('auth.phone')}</label>
               <input
                 type="tel"
                 name="phone"
@@ -79,7 +81,7 @@ const Register = () => {
               />
             </div>
             <div className="form-group">
-              <label>Пароль</label>
+              <label>{t('auth.password')}</label>
               <input
                 type="password"
                 name="password"
@@ -91,23 +93,23 @@ const Register = () => {
               />
             </div>
             <div className="form-group">
-              <label>Тип аккаунта</label>
+              <label>{t('auth.role')}</label>
               <select
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
                 className="form-select"
               >
-                <option value="client">Клиент</option>
-                <option value="professional">Мастер</option>
+                <option value="client">{t('auth.client')}</option>
+                <option value="professional">{t('auth.professional')}</option>
               </select>
             </div>
             <button type="submit" className="btn-primary btn-full" disabled={loading}>
-              {loading ? 'Регистрация...' : 'Зарегистрироваться'}
+              {loading ? t('common.loading') : t('auth.registerButton')}
             </button>
           </form>
           <p className="auth-link">
-            Уже есть аккаунт? <Link to="/login">Войти</Link>
+            {t('auth.haveAccount')} <Link to="/login">{t('auth.login')}</Link>
           </p>
         </div>
       </div>

@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useLanguage } from '../contexts/LanguageContext'
 import api from '../services/api'
 import { Sparkles, Heart, Droplet, Scissors, Hand, Home as HomeIcon, Star, Clock, Shield } from 'lucide-react'
 import './Home.css'
 import '../styles/3d-icons.css'
 
 const Home = () => {
+  const { t, language } = useLanguage()
   const [services, setServices] = useState([])
   const [professionals, setProfessionals] = useState([])
   const [loading, setLoading] = useState(true)
@@ -40,29 +42,41 @@ const Home = () => {
       setProfessionals(professionalsRes.data || [])
     } catch (error) {
       console.error('Failed to fetch data:', error)
-      setError('Не удалось загрузить данные. Проверьте подключение к серверу.')
+      setError(t('common.error'))
     } finally {
       setLoading(false)
     }
   }
 
   const serviceCategories = [
-    { name: 'Красота', icon: Sparkles, category: 'beauty', gradient: 'icon-3d-gradient-beauty' },
-    { name: 'Спа', icon: Droplet, category: 'spa', gradient: 'icon-3d-gradient-spa' },
-    { name: 'Массаж', icon: Hand, category: 'massage', gradient: 'icon-3d-gradient-massage' },
-    { name: 'Стрижка', icon: Scissors, category: 'haircut', gradient: 'icon-3d-gradient' },
-    { name: 'Уход за ногтями', icon: Heart, category: 'nail_care', gradient: 'icon-3d-gradient-beauty' },
-    { name: 'Уборка', icon: HomeIcon, category: 'cleaning', gradient: 'icon-3d-gradient-spa' },
+    { icon: Sparkles, category: 'beauty', gradient: 'icon-3d-gradient-beauty' },
+    { icon: Droplet, category: 'spa', gradient: 'icon-3d-gradient-spa' },
+    { icon: Hand, category: 'massage', gradient: 'icon-3d-gradient-massage' },
+    { icon: Scissors, category: 'haircut', gradient: 'icon-3d-gradient' },
+    { icon: Heart, category: 'nail_care', gradient: 'icon-3d-gradient-beauty' },
+    { icon: HomeIcon, category: 'cleaning', gradient: 'icon-3d-gradient-spa' },
   ]
+
+  const getServiceName = (service) => {
+    if (language === 'ru' && service.name_ru) return service.name_ru
+    if (language === 'ky' && service.name_ky) return service.name_ky
+    return service.name
+  }
+  
+  const getServiceDescription = (service) => {
+    if (language === 'ru' && service.description_ru) return service.description_ru
+    if (language === 'ky' && service.description_ky) return service.description_ky
+    return service.description
+  }
 
   if (error) {
     return (
       <div className="home">
         <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>
-          <h2>Ошибка загрузки</h2>
+          <h2>{t('common.error')}</h2>
           <p>{error}</p>
           <button onClick={fetchData} className="btn-primary" style={{ marginTop: '1rem' }}>
-            Попробовать снова
+            {language === 'ru' ? 'Попробовать снова' : language === 'ky' ? 'Кайра аракет кылуу' : 'Try again'}
           </button>
         </div>
       </div>
@@ -76,17 +90,17 @@ const Home = () => {
         <div className="container">
           <div className="hero-content">
             <h1 className="hero-title">
-              Профессиональные услуги на дому
+              {t('home.heroTitle')}
             </h1>
             <p className="hero-subtitle">
-              Более 4.8 рейтинг мастеров. Красота, спа, массаж и многое другое прямо у вас дома
+              {t('home.heroSubtitle')}
             </p>
             <div className="hero-buttons">
               <Link to="/services" className="btn-primary btn-large">
-                Выбрать услугу
+                {t('home.selectService')}
               </Link>
               <Link to="/professionals" className="btn-secondary btn-large">
-                Найти мастера
+                {t('home.findMaster')}
               </Link>
             </div>
           </div>
@@ -96,7 +110,7 @@ const Home = () => {
       {/* Categories Section */}
       <section className="categories">
         <div className="container">
-          <h2 className="section-title">Категории услуг</h2>
+          <h2 className="section-title">{t('home.categories')}</h2>
           <div className="categories-grid">
             {serviceCategories.map((cat) => {
               const IconComponent = cat.icon
@@ -109,7 +123,7 @@ const Home = () => {
                   <div className={`category-icon icon-3d icon-3d-medium ${cat.gradient}`}>
                     <IconComponent size={48} strokeWidth={2} />
                   </div>
-                  <h3>{cat.name}</h3>
+                  <h3>{t(`services.categories.${cat.category}`)}</h3>
                 </Link>
               )
             })}
@@ -121,13 +135,13 @@ const Home = () => {
       <section className="services-section">
         <div className="container">
           <div className="section-header">
-            <h2 className="section-title">Популярные услуги</h2>
+            <h2 className="section-title">{t('home.popularServices')}</h2>
             <Link to="/services" className="section-link">
-              Смотреть все →
+              {t('home.viewAll')} →
             </Link>
           </div>
           {loading ? (
-            <div className="loading">Загрузка...</div>
+            <div className="loading">{t('common.loading')}</div>
           ) : (
             <div className="services-grid">
               {services.map((service) => (
@@ -138,20 +152,20 @@ const Home = () => {
                 >
                   {service.image_url && (
                     <div className="service-image">
-                      <img src={service.image_url} alt={service.name} />
+                      <img src={service.image_url} alt={getServiceName(service)} />
                     </div>
                   )}
                   <div className="service-content">
-                    <h3>{service.name_ru || service.name}</h3>
+                    <h3>{getServiceName(service)}</h3>
                     <p className="service-description">
-                      {service.description_ru || service.description}
+                      {getServiceDescription(service)}
                     </p>
                     <div className="service-footer">
                       <span className="service-price">
-                        {service.price} сом
+                        {service.price} {language === 'ky' ? 'сом' : 'сом'}
                       </span>
                       <span className="service-duration">
-                        {service.duration_minutes} мин
+                        {service.duration_minutes} {t('services.minutes')}
                       </span>
                     </div>
                   </div>
@@ -166,13 +180,13 @@ const Home = () => {
       <section className="professionals-section">
         <div className="container">
           <div className="section-header">
-            <h2 className="section-title">Топ мастера</h2>
+            <h2 className="section-title">{t('home.topMasters')}</h2>
             <Link to="/professionals" className="section-link">
-              Смотреть всех →
+              {t('home.viewAll')} →
             </Link>
           </div>
           {loading ? (
-            <div className="loading">Загрузка...</div>
+            <div className="loading">{t('common.loading')}</div>
           ) : (
             <div className="professionals-grid">
               {professionals.map((professional) => (
@@ -217,35 +231,35 @@ const Home = () => {
       {/* Features Section */}
       <section className="features">
         <div className="container">
-          <h2 className="section-title">Почему выбирают нас</h2>
+          <h2 className="section-title">{t('home.whyChooseUs')}</h2>
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon icon-3d icon-3d-large icon-3d-animated">
                 <Star size={64} fill="currentColor" strokeWidth={1.5} />
               </div>
-              <h3>Высокий рейтинг</h3>
-              <p>Все мастера имеют рейтинг выше 4.8</p>
+              <h3>{t('home.highRating')}</h3>
+              <p>{t('home.highRatingDesc')}</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon icon-3d icon-3d-large icon-3d-animated">
                 <HomeIcon size={64} strokeWidth={2} />
               </div>
-              <h3>Услуги на дому</h3>
-              <p>Выезд мастера к вам домой</p>
+              <h3>{t('home.homeServices')}</h3>
+              <p>{t('home.homeServicesDesc')}</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon icon-3d icon-3d-large icon-3d-animated">
                 <Clock size={64} strokeWidth={2} />
               </div>
-              <h3>Удобное время</h3>
-              <p>Выбирайте удобное для вас время</p>
+              <h3>{t('home.convenientTime')}</h3>
+              <p>{t('home.convenientTimeDesc')}</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon icon-3d icon-3d-large icon-3d-animated">
                 <Shield size={64} strokeWidth={2} />
               </div>
-              <h3>Безопасная оплата</h3>
-              <p>Безопасные способы оплаты</p>
+              <h3>{t('home.safePayment')}</h3>
+              <p>{t('home.safePaymentDesc')}</p>
             </div>
           </div>
         </div>

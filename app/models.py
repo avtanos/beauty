@@ -111,3 +111,123 @@ class Review(Base):
     client = relationship("User", foreign_keys=[client_id], back_populates="reviews_given")
     professional = relationship("User", foreign_keys=[professional_id], back_populates="reviews_received")
 
+# Beauty Tracker Models
+class HabitCategory(str, enum.Enum):
+    FACE = "face"
+    BODY = "body"
+    LIFESTYLE = "lifestyle"
+    FOCUS = "focus"
+
+class ProgramStatus(str, enum.Enum):
+    ACTIVE = "active"
+    FINISHED = "finished"
+    CANCELLED = "cancelled"
+
+class DayStatus(str, enum.Enum):
+    LOCKED = "locked"
+    OPEN = "open"
+    COMPLETED = "completed"
+    SKIPPED = "skipped"
+
+class TrackerHabit(Base):
+    __tablename__ = "tracker_habits"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(Enum(HabitCategory), nullable=False)
+    title = Column(String, nullable=False)
+    title_ru = Column(String, nullable=True)
+    title_ky = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    description_ru = Column(Text, nullable=True)
+    description_ky = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    program_day_habits = relationship("TrackerProgramDayHabit", back_populates="habit")
+    user_day_logs = relationship("TrackerUserDayLog", back_populates="habit")
+
+class TrackerProgramTemplate(Base):
+    __tablename__ = "tracker_program_templates"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    version = Column(Integer, default=1)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    program_days = relationship("TrackerProgramDay", back_populates="template", order_by="TrackerProgramDay.day_number")
+    user_programs = relationship("TrackerUserProgram", back_populates="template")
+
+class TrackerProgramDay(Base):
+    __tablename__ = "tracker_program_days"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    program_template_id = Column(Integer, ForeignKey("tracker_program_templates.id"), nullable=False)
+    day_number = Column(Integer, nullable=False)  # 1-30
+    focus_text = Column(Text, nullable=True)
+    focus_text_ru = Column(Text, nullable=True)
+    focus_text_ky = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    template = relationship("TrackerProgramTemplate", back_populates="program_days")
+    day_habits = relationship("TrackerProgramDayHabit", back_populates="program_day", order_by="TrackerProgramDayHabit.sort_order")
+
+class TrackerProgramDayHabit(Base):
+    __tablename__ = "tracker_program_day_habits"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    program_day_id = Column(Integer, ForeignKey("tracker_program_days.id"), nullable=False)
+    habit_id = Column(Integer, ForeignKey("tracker_habits.id"), nullable=False)
+    sort_order = Column(Integer, default=0)
+    
+    # Relationships
+    program_day = relationship("TrackerProgramDay", back_populates="day_habits")
+    habit = relationship("TrackerHabit", back_populates="program_day_habits")
+
+class TrackerUserProgram(Base):
+    __tablename__ = "tracker_user_programs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    program_template_id = Column(Integer, ForeignKey("tracker_program_templates.id"), nullable=False)
+    started_at = Column(DateTime(timezone=True), server_default=func.now())
+    finished_at = Column(DateTime(timezone=True), nullable=True)
+    status = Column(Enum(ProgramStatus), default=ProgramStatus.ACTIVE)
+    allowed_skips = Column(Integer, default=3)
+    used_skips = Column(Integer, default=0)
+    
+    # Relationships
+    user = relationship("User")
+    template = relationship("TrackerProgramTemplate", back_populates="user_programs")
+    user_days = relationship("TrackerUserDay", back_populates="user_program", order_by="TrackerUserDay.day_number")
+
+class TrackerUserDay(Base):
+    __tablename__ = "tracker_user_days"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_program_id = Column(Integer, ForeignKey("tracker_user_programs.id"), nullable=False)
+    day_number = Column(Integer, nullable=False)  # 1-30
+    status = Column(Enum(DayStatus), default=DayStatus.LOCKED)
+    opened_at = Column(DateTime(timezone=True), nullable=True)
+    closed_at = Column(DateTime(timezone=True), nullable=True)
+    
+    # Relationships
+    user_program = relationship("TrackerUserProgram", back_populates="user_days")
+    program_day = relationship("TrackerProgramDay", foreign_keys="TrackerProgramDay.day_number", primaryjoin="TrackerUserDay.day_number == TrackerProgramDay.day_number", viewonly=True)
+    logs = relationship("TrackerUserDayLog", back_populates="user_day")
+
+class TrackerUserDayLog(Base):
+    __tablename__ = "tracker_user_day_logs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_day_id = Column(Integer, ForeignKey("tracker_user_days.id"), nullable=False)
+    habit_id = Column(Integer, ForeignKey("tracker_habits.id"), nullable=False)
+    completed = Column(Boolean, default=False)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    
+    # Relationships
+    user_day = relationship("TrackerUserDay", back_populates="logs")
+    habit = relationship("TrackerHabit", back_populates="user_day_logs")

@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useLanguage } from '../contexts/LanguageContext'
 import { useNavigate, Link } from 'react-router-dom'
 import api from '../services/api'
 import { format } from 'date-fns'
 import ru from 'date-fns/locale/ru'
 import {
   BarChart3, Calendar, Star, DollarSign, Heart, User,
-  Eye, MessageSquare, Plus, X
+  Eye, MessageSquare, Plus, X, Sparkles
 } from 'lucide-react'
 import './ClientCabinet.css'
 
 const ClientCabinet = () => {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [stats, setStats] = useState(null)
@@ -80,7 +82,7 @@ const ClientCabinet = () => {
         <div className="cabinet-sidebar">
           <div className="cabinet-header">
             <User size={32} className="cabinet-logo" />
-            <h2>Мой кабинет</h2>
+            <h2>{t('nav.myCabinet')}</h2>
           </div>
           <nav className="cabinet-nav">
             <button
@@ -88,35 +90,42 @@ const ClientCabinet = () => {
               onClick={() => setActiveTab('dashboard')}
             >
               <BarChart3 size={20} />
-              <span>Дашборд</span>
+              <span>{t('clientCabinet.dashboard')}</span>
             </button>
             <button
               className={activeTab === 'bookings' ? 'active' : ''}
               onClick={() => setActiveTab('bookings')}
             >
               <Calendar size={20} />
-              <span>Мои заказы</span>
+              <span>{t('clientCabinet.myOrders')}</span>
             </button>
             <button
               className={activeTab === 'reviews' ? 'active' : ''}
               onClick={() => setActiveTab('reviews')}
             >
               <Star size={20} />
-              <span>Мои отзывы</span>
+              <span>{t('clientCabinet.myReviews')}</span>
             </button>
             <button
               className={activeTab === 'favorites' ? 'active' : ''}
               onClick={() => setActiveTab('favorites')}
             >
               <Heart size={20} />
-              <span>Избранные мастера</span>
+              <span>{t('clientCabinet.favoriteMasters')}</span>
             </button>
+            <Link
+              to="/client/tracker"
+              className="cabinet-nav-link"
+            >
+              <Sparkles size={20} />
+              <span>{t('clientCabinet.tracker')}</span>
+            </Link>
           </nav>
         </div>
 
         <div className="cabinet-content">
           {loading ? (
-            <div className="loading">Загрузка...</div>
+            <div className="loading">{t('common.loading')}</div>
           ) : (
             <>
               {activeTab === 'dashboard' && stats && (

@@ -7,17 +7,24 @@ export default defineConfig({
   base: process.env.NODE_ENV === 'production' ? '/beauty/' : '/',
   server: {
     port: 5174,
+    host: '0.0.0.0',
+    open: true,
+    cors: true,
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path,
+        secure: false,
       }
     }
   },
   build: {
     outDir: 'dist',
     sourcemap: false,
+    chunkSizeWarningLimit: 1000
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom']
   }
 })
 

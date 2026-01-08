@@ -82,6 +82,25 @@
   font-weight: 600;
 }
 
+@media (max-width: 768px) {
+  .auth-page {
+    padding: 1rem 0;
+    min-height: calc(100vh - 150px);
+  }
+  
+  .auth-container {
+    padding: 0 15px;
+  }
+  
+  .auth-card {
+    padding: 2rem;
+  }
+  
+  .auth-card h1 {
+    font-size: 1.75rem;
+  }
+}
+
 @media (max-width: 480px) {
   .auth-card {
     padding: 1.5rem;
@@ -89,6 +108,17 @@
   
   .auth-card h1 {
     font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .form-group input,
+  .form-select {
+    padding: 0.65rem;
+    font-size: 0.95rem;
   }
 }
 

@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routers import auth, users, services, bookings, reviews, admin, professional, client
+from app.routers import auth, users, services, bookings, reviews, admin, professional, client, tracker
+from app.routers import admin_tracker
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -30,6 +31,8 @@ app.include_router(reviews.router, prefix="/api/reviews", tags=["reviews"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(professional.router, prefix="/api/professional", tags=["professional"])
 app.include_router(client.router, prefix="/api/client", tags=["client"])
+app.include_router(tracker.router, prefix="/api/tracker", tags=["tracker"])
+app.include_router(admin_tracker.router, prefix="/api/admin/tracker", tags=["admin-tracker"])
 
 @app.get("/")
 async def root():
