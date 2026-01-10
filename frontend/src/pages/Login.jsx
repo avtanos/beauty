@@ -1,17 +1,32 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
+import { Eye, EyeOff } from 'lucide-react'
 import './Auth.css'
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, user } = useAuth()
   const { t } = useLanguage()
   const navigate = useNavigate()
+  
+  // Редирект если уже авторизован
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') {
+        navigate('/admin')
+      } else if (user.role === 'professional') {
+        navigate('/professional')
+      } else if (user.role === 'client') {
+        navigate('/client')
+      }
+    }
+  }, [user, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -20,9 +35,15 @@ const Login = () => {
 
     try {
       await login(email, password)
-      navigate('/')
+      // Редирект произойдет автоматически через useEffect при обновлении user
     } catch (err) {
-      setError(t('auth.loginError'))
+      setError(t('auth.loginError') || 'Ошибка входа')
+      console.error('Login error:', err)
+      if (err.response?.data?.detail) {
+        setError(err.response.data.detail)
+      } else if (err.message) {
+        setError(err.message)
+      }
     } finally {
       setLoading(false)
     }
@@ -47,13 +68,28 @@ const Login = () => {
             </div>
             <div className="form-group">
               <label>{t('auth.password')}</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-              />
+              <div className="password-input-wrapper">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  className="password-input"
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                >
+                  {showPassword ? (
+                    <EyeOff size={20} strokeWidth={1.8} />
+                  ) : (
+                    <Eye size={20} strokeWidth={1.8} />
+                  )}
+                </button>
+              </div>
             </div>
             <button type="submit" className="btn-primary btn-full" disabled={loading}>
               {loading ? t('common.loading') : t('auth.loginButton')}

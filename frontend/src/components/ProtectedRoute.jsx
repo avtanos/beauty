@@ -6,10 +6,19 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
   const location = useLocation()
 
   if (loading) {
-    return <div className="loading">Загрузка...</div>
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '60vh' 
+      }}>
+        <div className="loading">Загрузка...</div>
+      </div>
+    )
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace state={{ from: location }} />
   }
 

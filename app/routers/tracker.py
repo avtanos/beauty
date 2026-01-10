@@ -11,6 +11,35 @@ from app.models import DayStatus, ProgramStatus, HabitCategory
 router = APIRouter()
 
 # Публичные endpoints
+@router.get("/public/programs")
+def get_public_programs(db: Session = Depends(get_db)):
+    """Получить список ВСЕХ АКТИВНЫХ программ для гостей (только is_active == True)"""
+    # Фильтруем только активные программы
+    templates = db.query(models.TrackerProgramTemplate).filter(
+        models.TrackerProgramTemplate.is_active == True
+    ).order_by(models.TrackerProgramTemplate.id).all()
+    
+    result = []
+    for template in templates:
+        # Подсчитываем количество дней для каждой программы
+        days_count = db.query(models.TrackerProgramDay).filter(
+            models.TrackerProgramDay.program_template_id == template.id
+        ).count()
+        
+        # Возвращаем только активные программы
+        result.append({
+            "id": template.id,
+            "name": template.name,
+            "description": template.description,
+            "description_ru": template.description_ru,
+            "description_ky": template.description_ky,
+            "days_count": days_count,
+            "version": template.version,
+            "is_active": True  # Явно указываем, что все программы активны
+        })
+    
+    return result
+
 @router.get("/public", response_model=schemas.TrackerPublicInfo)
 def get_public_info(db: Session = Depends(get_db)):
     """Получить публичную информацию о трекере для лендинга"""
@@ -41,17 +70,19 @@ def get_public_info(db: Session = Depends(get_db)):
         ]
     }
 
-@router.get("/public/demo-day")
-def get_demo_day(db: Session = Depends(get_db)):
-    """Получить пример дня для демонстрации (без персональных данных)"""
-    # Получаем первый день из активного шаблона
+@router.get("/public/programs/{program_id}/demo-day")
+def get_demo_day(program_id: int, db: Session = Depends(get_db)):
+    """Получить пример дня для демонстрации конкретной программы (без персональных данных)"""
+    # Проверяем, что программа существует и активна
     template = db.query(models.TrackerProgramTemplate).filter(
+        models.TrackerProgramTemplate.id == program_id,
         models.TrackerProgramTemplate.is_active == True
     ).first()
     
     if not template:
-        raise HTTPException(status_code=404, detail="No active program template found")
+        raise HTTPException(status_code=404, detail="Program not found or not active")
     
+    # Получаем первый день программы
     day = db.query(models.TrackerProgramDay).filter(
         models.TrackerProgramDay.program_template_id == template.id,
         models.TrackerProgramDay.day_number == 1
@@ -68,7 +99,7 @@ def get_demo_day(db: Session = Depends(get_db)):
     habits = []
     for dh in day_habits:
         habit = db.query(models.TrackerHabit).filter(models.TrackerHabit.id == dh.habit_id).first()
-        if habit:
+        if habit and habit.is_active:
             habits.append({
                 "id": habit.id,
                 "category": habit.category.value,
@@ -79,6 +110,8 @@ def get_demo_day(db: Session = Depends(get_db)):
             })
     
     return {
+        "program_id": template.id,
+        "program_name": template.name,
         "day_number": day.day_number,
         "focus_text": day.focus_text,
         "focus_text_ru": day.focus_text_ru,

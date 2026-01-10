@@ -23,7 +23,10 @@ const ProfessionalCabinet = () => {
   const [editingService, setEditingService] = useState(null)
 
   useEffect(() => {
-    if (user?.role !== 'professional') {
+    if (!user) {
+      return // Ждем загрузки пользователя
+    }
+    if (user.role !== 'professional') {
       navigate('/')
       return
     }
@@ -274,8 +277,23 @@ const ServicesTab = ({
         price: editingService.price || '',
         duration_minutes: editingService.duration_minutes || ''
       })
-      setShowForm(true)
+      // Используем onShowForm, переданный из родительского компонента
+      onShowForm()
+    } else {
+      // Сбрасываем форму, если editingService стал null
+      setFormData({
+        name: '',
+        name_ru: '',
+        name_ky: '',
+        description: '',
+        description_ru: '',
+        description_ky: '',
+        category: 'beauty',
+        price: '',
+        duration_minutes: ''
+      })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingService])
 
   const handleSubmit = (e) => {

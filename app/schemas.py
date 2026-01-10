@@ -1,7 +1,10 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
-from app.models import UserRole, BookingStatus, ServiceCategory, HabitCategory, ProgramStatus, DayStatus
+from app.models import (
+    UserRole, BookingStatus, ServiceCategory, HabitCategory, ProgramStatus, DayStatus,
+    BlogPostStatus, NewsItemStatus, ProductOrderStatus
+)
 
 # User Schemas
 class UserBase(BaseModel):
@@ -144,6 +147,7 @@ class TrackerHabitBase(BaseModel):
     description: Optional[str] = None
     description_ru: Optional[str] = None
     description_ky: Optional[str] = None
+    # program_template_id убран, так как привычка может быть в нескольких программах
 
 class TrackerHabitCreate(TrackerHabitBase):
     pass
@@ -162,16 +166,31 @@ class TrackerHabitResponse(TrackerHabitBase):
     id: int
     is_active: bool
     created_at: datetime
+    # program_template убран, так как привычка может быть в нескольких программах
+    # Вместо этого используется day_ids в get_habits endpoint
     
     class Config:
         from_attributes = True
 
 class TrackerProgramTemplateBase(BaseModel):
     name: str
+    description: Optional[str] = None
+    description_ru: Optional[str] = None
+    description_ky: Optional[str] = None
+    days_count: Optional[int] = 30
     version: Optional[int] = 1
 
 class TrackerProgramTemplateCreate(TrackerProgramTemplateBase):
     pass
+
+class TrackerProgramTemplateUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    description_ru: Optional[str] = None
+    description_ky: Optional[str] = None
+    days_count: Optional[int] = None
+    version: Optional[int] = None
+    is_active: Optional[bool] = None
 
 class TrackerProgramTemplateResponse(TrackerProgramTemplateBase):
     id: int
@@ -257,3 +276,264 @@ class TrackerPublicInfo(BaseModel):
     benefits: List[str]
     benefits_ru: Optional[List[str]] = None
     benefits_ky: Optional[List[str]] = None
+
+# Blog Schemas
+class BlogCategoryBase(BaseModel):
+    slug: str
+    name: str
+    name_ru: Optional[str] = None
+    name_ky: Optional[str] = None
+
+class BlogCategoryCreate(BlogCategoryBase):
+    pass
+
+class BlogCategoryResponse(BlogCategoryBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class BlogTagBase(BaseModel):
+    name: str
+
+class BlogTagCreate(BlogTagBase):
+    pass
+
+class BlogTagResponse(BlogTagBase):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class BlogPostBase(BaseModel):
+    title: str
+    title_ru: Optional[str] = None
+    title_ky: Optional[str] = None
+    content: str
+    cover_image_url: Optional[str] = None
+    category_id: Optional[int] = None
+
+class BlogPostCreate(BlogPostBase):
+    tag_ids: Optional[List[int]] = []
+
+class BlogPostUpdate(BaseModel):
+    title: Optional[str] = None
+    title_ru: Optional[str] = None
+    title_ky: Optional[str] = None
+    content: Optional[str] = None
+    cover_image_url: Optional[str] = None
+    category_id: Optional[int] = None
+    tag_ids: Optional[List[int]] = None
+
+class BlogPostResponse(BlogPostBase):
+    id: int
+    author_id: int
+    status: BlogPostStatus
+    rejection_reason: Optional[str] = None
+    published_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    author: Optional[UserResponse] = None
+    category: Optional[BlogCategoryResponse] = None
+    tags: Optional[List[BlogTagResponse]] = []
+    
+    class Config:
+        from_attributes = True
+
+# News Schemas
+class NewsSourceBase(BaseModel):
+    name: str
+    base_url: str
+    feed_url: Optional[str] = None
+    parse_type: str = "rss"
+    language: str = "ru"
+    fetch_interval_minutes: int = 60
+
+class NewsSourceCreate(NewsSourceBase):
+    pass
+
+class NewsSourceUpdate(BaseModel):
+    name: Optional[str] = None
+    base_url: Optional[str] = None
+    feed_url: Optional[str] = None
+    parse_type: Optional[str] = None
+    language: Optional[str] = None
+    is_active: Optional[bool] = None
+    fetch_interval_minutes: Optional[int] = None
+
+class NewsSourceResponse(NewsSourceBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+class NewsCategoryBase(BaseModel):
+    slug: str
+    name: str
+    name_ru: Optional[str] = None
+    name_ky: Optional[str] = None
+
+class NewsCategoryCreate(NewsCategoryBase):
+    pass
+
+class NewsCategoryResponse(NewsCategoryBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class NewsItemBase(BaseModel):
+    title: str
+    excerpt: Optional[str] = None
+    image_url: Optional[str] = None
+    original_url: str
+    published_at: Optional[datetime] = None
+
+class NewsItemCreate(NewsItemBase):
+    source_id: int
+    category_id: Optional[int] = None
+
+class NewsItemResponse(NewsItemBase):
+    id: int
+    source_id: int
+    category_id: Optional[int] = None
+    status: NewsItemStatus
+    created_at: datetime
+    source: Optional[NewsSourceResponse] = None
+    category: Optional[NewsCategoryResponse] = None
+    
+    class Config:
+        from_attributes = True
+
+# Product Schemas
+class ProductCategoryBase(BaseModel):
+    slug: str
+    name: str
+    name_ru: Optional[str] = None
+    name_ky: Optional[str] = None
+
+class ProductCategoryCreate(ProductCategoryBase):
+    pass
+
+class ProductCategoryResponse(ProductCategoryBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class ProductImageBase(BaseModel):
+    image_url: str
+    sort_order: int = 0
+
+class ProductImageCreate(ProductImageBase):
+    pass
+
+class ProductImageResponse(ProductImageBase):
+    id: int
+    product_id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class ProductBase(BaseModel):
+    name: str
+    name_ru: Optional[str] = None
+    name_ky: Optional[str] = None
+    description: Optional[str] = None
+    description_ru: Optional[str] = None
+    description_ky: Optional[str] = None
+    price: float
+    currency: str = "KGS"
+    stock_qty: Optional[int] = None
+    category_id: Optional[int] = None
+
+class ProductCreate(ProductBase):
+    image_urls: Optional[List[str]] = []
+
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    name_ru: Optional[str] = None
+    name_ky: Optional[str] = None
+    description: Optional[str] = None
+    description_ru: Optional[str] = None
+    description_ky: Optional[str] = None
+    price: Optional[float] = None
+    currency: Optional[str] = None
+    stock_qty: Optional[int] = None
+    category_id: Optional[int] = None
+    is_active: Optional[bool] = None
+    image_urls: Optional[List[str]] = None
+
+class ProductResponse(ProductBase):
+    id: int
+    seller_id: int
+    is_active: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    seller: Optional[UserResponse] = None
+    category: Optional[ProductCategoryResponse] = None
+    images: Optional[List[ProductImageResponse]] = []
+    
+    class Config:
+        from_attributes = True
+
+class ProductOrderItemBase(BaseModel):
+    product_id: int
+    qty: int
+
+class ProductOrderItemCreate(ProductOrderItemBase):
+    pass
+
+class ProductOrderItemResponse(ProductOrderItemBase):
+    id: int
+    order_id: int
+    unit_price: float
+    created_at: datetime
+    product: Optional[ProductResponse] = None
+    
+    class Config:
+        from_attributes = True
+
+class ProductOrderBase(BaseModel):
+    items: List[ProductOrderItemCreate]
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    notes: Optional[str] = None
+
+class ProductOrderCreate(ProductOrderBase):
+    seller_id: int
+
+class ProductOrderUpdate(BaseModel):
+    status: Optional[ProductOrderStatus] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    notes: Optional[str] = None
+
+class ProductOrderResponse(BaseModel):
+    id: int
+    client_id: int
+    seller_id: int
+    status: ProductOrderStatus
+    total_price: float
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    client: Optional[UserResponse] = None
+    seller: Optional[UserResponse] = None
+    items: Optional[List[ProductOrderItemResponse]] = []
+    
+    class Config:
+        from_attributes = True

@@ -52,6 +52,41 @@
   border-color: var(--primary-color);
 }
 
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  padding-right: 45px !important;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6B7280;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: #111827;
+}
+
+.password-toggle:focus {
+  outline: none;
+  color: var(--primary-color);
+}
+
 .form-select {
   background: var(--white);
   cursor: pointer;

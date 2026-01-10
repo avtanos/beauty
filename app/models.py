@@ -52,6 +52,10 @@ class User(Base):
     bookings_as_professional = relationship("Booking", foreign_keys="Booking.professional_id", back_populates="professional")
     reviews_given = relationship("Review", foreign_keys="Review.client_id", back_populates="client")
     reviews_received = relationship("Review", foreign_keys="Review.professional_id", back_populates="professional")
+    blog_posts = relationship("BlogPost", foreign_keys="BlogPost.author_id")
+    products_sold = relationship("Product", foreign_keys="Product.seller_id")
+    product_orders_as_client = relationship("ProductOrder", foreign_keys="ProductOrder.client_id")
+    product_orders_as_seller = relationship("ProductOrder", foreign_keys="ProductOrder.seller_id")
 
 class Service(Base):
     __tablename__ = "services"
@@ -140,10 +144,12 @@ class TrackerHabit(Base):
     description = Column(Text, nullable=True)
     description_ru = Column(Text, nullable=True)
     description_ky = Column(Text, nullable=True)
+    program_template_id = Column(Integer, ForeignKey("tracker_program_templates.id"), nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
+    program_template = relationship("TrackerProgramTemplate", foreign_keys=[program_template_id])
     program_day_habits = relationship("TrackerProgramDayHabit", back_populates="habit")
     user_day_logs = relationship("TrackerUserDayLog", back_populates="habit")
 
@@ -152,6 +158,10 @@ class TrackerProgramTemplate(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    description_ru = Column(Text, nullable=True)
+    description_ky = Column(Text, nullable=True)
+    days_count = Column(Integer, default=30)  # Количество дней в программе
     version = Column(Integer, default=1)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -231,3 +241,221 @@ class TrackerUserDayLog(Base):
     # Relationships
     user_day = relationship("TrackerUserDay", back_populates="logs")
     habit = relationship("TrackerHabit", back_populates="user_day_logs")
+
+# Blog Models
+class BlogPostStatus(str, enum.Enum):
+    DRAFT = "draft"
+    SUBMITTED = "submitted"
+    PUBLISHED = "published"
+    REJECTED = "rejected"
+    ARCHIVED = "archived"
+
+class BlogCategory(Base):
+    __tablename__ = "blog_categories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    slug = Column(String, unique=True, nullable=False, index=True)
+    name = Column(String, nullable=False)
+    name_ru = Column(String, nullable=True)
+    name_ky = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    posts = relationship("BlogPost", back_populates="category")
+
+class BlogTag(Base):
+    __tablename__ = "blog_tags"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    posts = relationship("BlogPostTag", back_populates="tag")
+
+class BlogPost(Base):
+    __tablename__ = "blog_posts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("blog_categories.id"), nullable=True)
+    title = Column(String, nullable=False)
+    title_ru = Column(String, nullable=True)
+    title_ky = Column(String, nullable=True)
+    content = Column(Text, nullable=False)  # Markdown/HTML
+    cover_image_url = Column(String, nullable=True)
+    status = Column(Enum(BlogPostStatus), default=BlogPostStatus.DRAFT)
+    rejection_reason = Column(Text, nullable=True)
+    published_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    author = relationship("User")
+    category = relationship("BlogCategory", back_populates="posts")
+    tags = relationship("BlogPostTag", back_populates="post")
+
+class BlogPostTag(Base):
+    __tablename__ = "blog_post_tags"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("blog_posts.id"), nullable=False)
+    tag_id = Column(Integer, ForeignKey("blog_tags.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    post = relationship("BlogPost", back_populates="tags")
+    tag = relationship("BlogTag", back_populates="posts")
+
+# News/Useful Models
+class NewsSourceStatus(str, enum.Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    HIDDEN = "hidden"
+
+class NewsItemStatus(str, enum.Enum):
+    ACTIVE = "active"
+    HIDDEN = "hidden"
+
+class NewsSource(Base):
+    __tablename__ = "news_sources"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    base_url = Column(String, nullable=False)
+    feed_url = Column(String, nullable=True)  # RSS feed URL
+    parse_type = Column(String, default="rss")  # rss, html, api
+    language = Column(String, default="ru")  # en, ru, ky
+    is_active = Column(Boolean, default=True)
+    fetch_interval_minutes = Column(Integer, default=60)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    items = relationship("NewsItem", back_populates="source")
+
+class NewsCategory(Base):
+    __tablename__ = "news_categories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    slug = Column(String, unique=True, nullable=False, index=True)
+    name = Column(String, nullable=False)
+    name_ru = Column(String, nullable=True)
+    name_ky = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    items = relationship("NewsItem", back_populates="category")
+
+class NewsItem(Base):
+    __tablename__ = "news_items"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    source_id = Column(Integer, ForeignKey("news_sources.id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("news_categories.id"), nullable=True)
+    title = Column(String, nullable=False)
+    excerpt = Column(Text, nullable=True)  # Короткий текст, не полный контент
+    image_url = Column(String, nullable=True)
+    original_url = Column(String, unique=True, nullable=False, index=True)
+    published_at = Column(DateTime(timezone=True), nullable=True)  # Дата публикации в источнике
+    status = Column(Enum(NewsItemStatus), default=NewsItemStatus.ACTIVE)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    source = relationship("NewsSource", back_populates="items")
+    category = relationship("NewsCategory", back_populates="items")
+
+# Products Models
+class ProductOrderStatus(str, enum.Enum):
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    PACKED = "packed"
+    SHIPPED = "shipped"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+class ProductCategory(Base):
+    __tablename__ = "product_categories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    slug = Column(String, unique=True, nullable=False, index=True)
+    name = Column(String, nullable=False)
+    name_ru = Column(String, nullable=True)
+    name_ky = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    products = relationship("Product", back_populates="category")
+
+class Product(Base):
+    __tablename__ = "products"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    seller_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("product_categories.id"), nullable=True)
+    name = Column(String, nullable=False)
+    name_ru = Column(String, nullable=True)
+    name_ky = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    description_ru = Column(Text, nullable=True)
+    description_ky = Column(Text, nullable=True)
+    price = Column(Float, nullable=False)
+    currency = Column(String, default="KGS")  # KGS, USD, etc.
+    stock_qty = Column(Integer, nullable=True)  # null = unlimited
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    seller = relationship("User")
+    category = relationship("ProductCategory", back_populates="products")
+    images = relationship("ProductImage", back_populates="product", order_by="ProductImage.sort_order")
+    order_items = relationship("ProductOrderItem", back_populates="product")
+
+class ProductImage(Base):
+    __tablename__ = "product_images"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    image_url = Column(String, nullable=False)
+    sort_order = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    product = relationship("Product", back_populates="images")
+
+class ProductOrder(Base):
+    __tablename__ = "product_orders"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    seller_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    status = Column(Enum(ProductOrderStatus), default=ProductOrderStatus.PENDING)
+    total_price = Column(Float, nullable=False)
+    address = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    client = relationship("User", foreign_keys=[client_id])
+    seller = relationship("User", foreign_keys=[seller_id])
+    items = relationship("ProductOrderItem", back_populates="order")
+
+class ProductOrderItem(Base):
+    __tablename__ = "product_order_items"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("product_orders.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    qty = Column(Integer, nullable=False)
+    unit_price = Column(Float, nullable=False)  # Цена на момент заказа
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    order = relationship("ProductOrder", back_populates="items")
+    product = relationship("Product", back_populates="order_items")

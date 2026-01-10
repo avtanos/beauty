@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
 import api from '../services/api'
+import SEO from '../components/SEO'
+import { Sparkles } from 'lucide-react'
 import './Services.css'
 
 const Services = () => {
@@ -49,8 +51,34 @@ const Services = () => {
     return service.description
   }
 
+  const baseUrl = window.location.origin
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "serviceType": "Beauty Services",
+    "provider": {
+      "@type": "LocalBusiness",
+      "name": "Suluu"
+    },
+    "areaServed": {
+      "@type": "GeoCircle",
+      "geoMidpoint": {
+        "@type": "GeoCoordinates",
+        "latitude": "41.2044",
+        "longitude": "74.7661"
+      }
+    }
+  }
+
   return (
     <div className="services-page">
+      <SEO
+        title={t('seo.services.title')}
+        description={t('seo.services.description')}
+        keywords={t('seo.services.keywords')}
+        type="website"
+        schema={schema}
+      />
       <div className="container">
         <h1 className="page-title">{t('services.title')}</h1>
         
@@ -86,11 +114,15 @@ const Services = () => {
                 to={`/services/${service.id}`}
                 className="service-card"
               >
-                {service.image_url && (
-                  <div className="service-image">
+                <div className="service-image">
+                  {service.image_url ? (
                     <img src={service.image_url} alt={getServiceName(service)} />
-                  </div>
-                )}
+                  ) : (
+                    <div className="service-image-placeholder">
+                      <Sparkles size={48} strokeWidth={1.5} />
+                    </div>
+                  )}
+                </div>
                 <div className="service-content">
                   <h3>{getServiceName(service)}</h3>
                   <p className="service-description">

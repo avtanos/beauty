@@ -1,14 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routers import auth, users, services, bookings, reviews, admin, professional, client, tracker
-from app.routers import admin_tracker
+from app.routers import (
+    auth, users, services, bookings, reviews, admin, professional, client, tracker,
+    admin_tracker, blog, admin_blog, news, admin_news, products, professional_products,
+    product_orders, admin_products
+)
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Tunuk",
+    title="Suluu",
     description="Beauty Services",
     version="1.0.0"
 )
@@ -33,10 +36,18 @@ app.include_router(professional.router, prefix="/api/professional", tags=["profe
 app.include_router(client.router, prefix="/api/client", tags=["client"])
 app.include_router(tracker.router, prefix="/api/tracker", tags=["tracker"])
 app.include_router(admin_tracker.router, prefix="/api/admin/tracker", tags=["admin-tracker"])
+app.include_router(blog.router, prefix="/api/blog", tags=["blog"])
+app.include_router(admin_blog.router, prefix="/api/admin/blog", tags=["admin-blog"])
+app.include_router(news.router, prefix="/api/news", tags=["news"])
+app.include_router(admin_news.router, prefix="/api/admin/news", tags=["admin-news"])
+app.include_router(products.router, prefix="/api/products", tags=["products"])
+app.include_router(professional_products.router, prefix="/api/professional/products", tags=["professional-products"])
+app.include_router(product_orders.router, prefix="/api/product-orders", tags=["product-orders"])
+app.include_router(admin_products.router, prefix="/api/admin/products", tags=["admin-products"])
 
 @app.get("/")
 async def root():
-    return {"message": "Tunuk API - Beauty Services"}
+    return {"message": "Suluu API - Beauty Services"}
 
 @app.get("/api/health")
 async def health_check():

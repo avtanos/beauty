@@ -34,7 +34,14 @@ if (shouldUseMockData) {
   api.interceptors.request.use(async (config) => {
     const url = config.url || ''
     
-    // Перехватываем GET запросы и возвращаем мок-данные
+    // Всегда пропускаем auth запросы и admin/tracker запросы на реальный API, даже с мок-данными
+    if (url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/me') ||
+        url.includes('/admin/tracker') || url.includes('/tracker/')) {
+      console.log('🔐 Bypassing mock for request:', url)
+      return config
+    }
+    
+    // Перехватываем только GET запросы для мок-данных
     if (config.method === 'get') {
       try {
         // Услуги
@@ -154,12 +161,23 @@ if (shouldUseMockData) {
     }
     
     // Для POST/PUT/DELETE запросов в production возвращаем успешный ответ
+    // Но НЕ для auth/login и auth/register - они должны идти на реальный API
     if (import.meta.env.PROD && ['post', 'put', 'delete'].includes(config.method?.toLowerCase())) {
+      // Пропускаем auth запросы на реальный API даже в production
+      if (url.includes('/auth/login') || url.includes('/auth/register')) {
+        return config
+      }
       return Promise.reject({ 
         mockResponse: true, 
         data: { message: 'Success', id: Date.now() },
         status: 200
       })
+    }
+    
+    // В dev режиме всегда пропускаем auth запросы и admin/tracker запросы на реальный API
+    if (url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/me') ||
+        url.includes('/admin/tracker') || url.includes('/tracker/')) {
+      return config
     }
     
     return config

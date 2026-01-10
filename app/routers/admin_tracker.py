@@ -1,6 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.database import get_db
 from app import models, schemas
 from app.auth import get_current_active_user
@@ -40,7 +41,7 @@ def create_template(
 @router.put("/templates/{template_id}", response_model=schemas.TrackerProgramTemplateResponse)
 def update_template(
     template_id: int,
-    template_update: dict,
+    template_update: schemas.TrackerProgramTemplateUpdate,
     current_user: models.User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
@@ -52,7 +53,8 @@ def update_template(
     if not db_template:
         raise HTTPException(status_code=404, detail="Template not found")
     
-    for field, value in template_update.items():
+    update_data = template_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
         if hasattr(db_template, field):
             setattr(db_template, field, value)
     
@@ -66,7 +68,7 @@ def activate_template(
     current_user: models.User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    """Активировать шаблон (деактивирует остальные)"""
+    """Активировать шаблон"""
     template = db.query(models.TrackerProgramTemplate).filter(
         models.TrackerProgramTemplate.id == template_id
     ).first()
@@ -74,13 +76,27 @@ def activate_template(
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
     
-    # Деактивируем все шаблоны
-    db.query(models.TrackerProgramTemplate).update({"is_active": False})
-    
-    # Активируем выбранный
     template.is_active = True
     db.commit()
     return {"message": "Template activated"}
+
+@router.post("/templates/{template_id}/deactivate")
+def deactivate_template(
+    template_id: int,
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Деактивировать шаблон"""
+    template = db.query(models.TrackerProgramTemplate).filter(
+        models.TrackerProgramTemplate.id == template_id
+    ).first()
+    
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    template.is_active = False
+    db.commit()
+    return {"message": "Template deactivated"}
 
 @router.delete("/templates/{template_id}")
 def delete_template(
@@ -121,32 +137,108 @@ def get_habits(
     current_user: models.User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    """Получить все привычки"""
+    """Получить все привычки с привязанными днями"""
     query = db.query(models.TrackerHabit)
     
     if category:
         query = query.filter(models.TrackerHabit.category == category)
     
     habits = query.all()
-    return habits
+    
+    # Добавляем информацию о привязанных днях для каждой привычки
+    result = []
+    for habit in habits:
+        habit_dict = schemas.TrackerHabitResponse.model_validate(habit).model_dump()
+        
+        # Получаем дни, к которым привязана привычка, и определяем программы
+        day_habits = db.query(models.TrackerProgramDayHabit).filter(
+            models.TrackerProgramDayHabit.habit_id == habit.id
+        ).all()
+        
+        day_ids = [dh.program_day_id for dh in day_habits]
+        habit_dict["day_ids"] = day_ids
+        
+        # Определяем программы, к которым относится привычка (через дни)
+        program_ids = set()
+        for day_id in day_ids:
+            program_day = db.query(models.TrackerProgramDay).filter(
+                models.TrackerProgramDay.id == day_id
+            ).first()
+            if program_day:
+                program_ids.add(program_day.program_template_id)
+        
+        # Получаем информацию о программах
+        programs_info = []
+        for program_id in program_ids:
+            program = db.query(models.TrackerProgramTemplate).filter(
+                models.TrackerProgramTemplate.id == program_id
+            ).first()
+            if program:
+                programs_info.append({"id": program.id, "name": program.name})
+        
+        habit_dict["programs"] = programs_info
+        
+        result.append(habit_dict)
+    
+    return result
 
 @router.post("/habits", response_model=schemas.TrackerHabitResponse)
 def create_habit(
     habit: schemas.TrackerHabitCreate,
+    day_ids: Optional[List[int]] = Query(None),
     current_user: models.User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
     """Создать новую привычку"""
-    db_habit = models.TrackerHabit(**habit.dict())
+    from sqlalchemy.orm import joinedload
+    
+    # Создаем привычку без day_ids (они передаются отдельно)
+    habit_data = habit.dict()
+    # Убираем program_template_id из данных, так как привычка может быть в нескольких программах
+    habit_data.pop('program_template_id', None)
+    db_habit = models.TrackerHabit(**habit_data)
     db.add(db_habit)
     db.commit()
     db.refresh(db_habit)
+    
+    # Привязываем привычку к дням программ, если указаны (дни могут быть из разных программ)
+    if day_ids:
+        for day_id in day_ids:
+            # Проверяем, что день существует
+            program_day = db.query(models.TrackerProgramDay).filter(
+                models.TrackerProgramDay.id == day_id
+            ).first()
+            
+            if program_day:
+                # Проверяем, нет ли уже такой связи
+                existing = db.query(models.TrackerProgramDayHabit).filter(
+                    models.TrackerProgramDayHabit.program_day_id == day_id,
+                    models.TrackerProgramDayHabit.habit_id == db_habit.id
+                ).first()
+                
+                if not existing:
+                    # Получаем максимальный sort_order для этого дня
+                    max_sort_result = db.query(func.max(models.TrackerProgramDayHabit.sort_order)).filter(
+                        models.TrackerProgramDayHabit.program_day_id == day_id
+                    ).scalar()
+                    max_sort = max_sort_result if max_sort_result is not None else 0
+                    
+                    day_habit = models.TrackerProgramDayHabit(
+                        program_day_id=day_id,
+                        habit_id=db_habit.id,
+                        sort_order=max_sort + 1
+                    )
+                    db.add(day_habit)
+        
+        db.commit()
+    
     return db_habit
 
 @router.put("/habits/{habit_id}", response_model=schemas.TrackerHabitResponse)
 def update_habit(
     habit_id: int,
     habit_update: schemas.TrackerHabitUpdate,
+    day_ids: Optional[List[int]] = Query(None),
     current_user: models.User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
@@ -159,15 +251,72 @@ def update_habit(
         raise HTTPException(status_code=404, detail="Habit not found")
     
     update_data = habit_update.dict(exclude_unset=True)
+    
+    # Убираем program_template_id из обновления, так как привычка может быть в нескольких программах
+    update_data.pop('program_template_id', None)
+    
+    # Обновляем поля привычки
     for field, value in update_data.items():
         setattr(db_habit, field, value)
     
     db.commit()
+    
+    # Обновляем привязку к дням, если переданы day_ids (даже если это пустой список)
+    if day_ids is not None:
+        # Удаляем все существующие связи привычки с днями
+        db.query(models.TrackerProgramDayHabit).filter(
+            models.TrackerProgramDayHabit.habit_id == habit_id
+        ).delete()
+        
+        # Создаем новые связи с указанными днями (дни могут быть из разных программ)
+        if day_ids and len(day_ids) > 0:
+            for day_id in day_ids:
+                # Проверяем, что день существует (может быть из любой программы)
+                program_day = db.query(models.TrackerProgramDay).filter(
+                    models.TrackerProgramDay.id == day_id
+                ).first()
+                
+                if program_day:
+                    # Получаем максимальный sort_order для этого дня
+                    max_sort_result = db.query(func.max(models.TrackerProgramDayHabit.sort_order)).filter(
+                        models.TrackerProgramDayHabit.program_day_id == day_id
+                    ).scalar()
+                    max_sort = max_sort_result if max_sort_result is not None else 0
+                    
+                    day_habit = models.TrackerProgramDayHabit(
+                        program_day_id=day_id,
+                        habit_id=habit_id,
+                        sort_order=max_sort + 1
+                    )
+                    db.add(day_habit)
+        
+        db.commit()
+    
     db.refresh(db_habit)
     return db_habit
 
-@router.delete("/habits/{habit_id}")
-def delete_habit(
+# Управление активностью привычек - более специфичные маршруты должны быть ПЕРЕД общим маршрутом /habits/{habit_id}
+@router.post("/habits/{habit_id}/activate")
+def activate_habit(
+    habit_id: int,
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Активировать привычку"""
+    habit = db.query(models.TrackerHabit).filter(
+        models.TrackerHabit.id == habit_id
+    ).first()
+    
+    if not habit:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    
+    habit.is_active = True
+    db.commit()
+    db.refresh(habit)
+    return {"message": "Habit activated"}
+
+@router.post("/habits/{habit_id}/deactivate")
+def deactivate_habit(
     habit_id: int,
     current_user: models.User = Depends(require_admin),
     db: Session = Depends(get_db)
@@ -182,16 +331,39 @@ def delete_habit(
     
     habit.is_active = False
     db.commit()
+    db.refresh(habit)
     return {"message": "Habit deactivated"}
 
+@router.delete("/habits/{habit_id}")
+def delete_habit(
+    habit_id: int,
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Деактивировать привычку (для обратной совместимости)"""
+    return deactivate_habit(habit_id, current_user, db)
+
 # Управление днями программы
+@router.get("/templates/{template_id}/days/simple")
+def get_template_days_simple(
+    template_id: int,
+    current_user: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Получить простой список дней шаблона (только id и номер дня)"""
+    days = db.query(models.TrackerProgramDay).filter(
+        models.TrackerProgramDay.program_template_id == template_id
+    ).order_by(models.TrackerProgramDay.day_number).all()
+    
+    return [{"id": day.id, "day_number": day.day_number} for day in days]
+
 @router.get("/templates/{template_id}/days", response_model=List[schemas.TrackerProgramDayResponse])
 def get_template_days(
     template_id: int,
     current_user: models.User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    """Получить все дни шаблона"""
+    """Получить все дни шаблона с привычками"""
     days = db.query(models.TrackerProgramDay).filter(
         models.TrackerProgramDay.program_template_id == template_id
     ).order_by(models.TrackerProgramDay.day_number).all()
@@ -269,8 +441,8 @@ def create_template_day(
 @router.put("/days/{day_id}", response_model=schemas.TrackerProgramDayResponse)
 def update_template_day(
     day_id: int,
-    day_update: dict,
-    habit_ids: Optional[List[int]] = None,
+    day_update: schemas.TrackerProgramDayCreate,
+    habit_ids: Optional[List[int]] = Query(None),
     current_user: models.User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
@@ -283,7 +455,8 @@ def update_template_day(
         raise HTTPException(status_code=404, detail="Day not found")
     
     # Обновляем поля дня
-    for field, value in day_update.items():
+    update_data = day_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
         if hasattr(db_day, field) and field != "habit_ids":
             setattr(db_day, field, value)
     

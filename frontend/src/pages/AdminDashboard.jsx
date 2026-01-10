@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useNavigate } from 'react-router-dom'
@@ -38,7 +38,10 @@ const AdminDashboard = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10)
 
   useEffect(() => {
-    if (user?.role !== 'admin') {
+    if (!user) {
+      return // Ждем загрузки пользователя
+    }
+    if (user.role !== 'admin') {
       navigate('/')
       return
     }
@@ -1095,12 +1098,20 @@ const TrackerManagement = ({
     description_ru: '',
     description_ky: ''
   })
+  const [selectedDayIds, setSelectedDayIds] = useState([])
+  const [programTemplates, setProgramTemplates] = useState([])
+  const [allProgramDays, setAllProgramDays] = useState([]) // Все дни из всех программ
+  const [selectedProgramsForDays, setSelectedProgramsForDays] = useState([]) // Множественный выбор программ для фильтрации дней
 
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [showTemplateForm, setShowTemplateForm] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState(null)
   const [templateForm, setTemplateForm] = useState({
     name: '',
+    description: '',
+    description_ru: '',
+    description_ky: '',
+    days_count: 30,
     version: 1
   })
   const [showDayForm, setShowDayForm] = useState(false)
@@ -1118,7 +1129,7 @@ const TrackerManagement = ({
     try {
       await api.post('/admin/tracker/templates', templateForm)
       setShowTemplateForm(false)
-      setTemplateForm({ name: '', version: 1 })
+      setTemplateForm({ name: '', description: '', description_ru: '', description_ky: '', days_count: 30, version: 1 })
       onRefresh()
     } catch (error) {
       console.error('Failed to create template:', error)
@@ -1131,7 +1142,7 @@ const TrackerManagement = ({
       await api.put(`/admin/tracker/templates/${editingTemplate.id}`, templateForm)
       setEditingTemplate(null)
       setShowTemplateForm(false)
-      setTemplateForm({ name: '', version: 1 })
+      setTemplateForm({ name: '', description: '', description_ru: '', description_ky: '', days_count: 30, version: 1 })
       onRefresh()
     } catch (error) {
       console.error('Failed to update template:', error)
@@ -1169,8 +1180,12 @@ const TrackerManagement = ({
   const handleEditTemplate = (template) => {
     setEditingTemplate(template)
     setTemplateForm({
-      name: template.name,
-      version: template.version
+      name: template.name || '',
+      description: template.description || '',
+      description_ru: template.description_ru || '',
+      description_ky: template.description_ky || '',
+      days_count: template.days_count || 30,
+      version: template.version || 1
     })
     setShowTemplateForm(true)
   }
@@ -1193,10 +1208,15 @@ const TrackerManagement = ({
         focus_text_ru: dayForm.focus_text_ru,
         focus_text_ky: dayForm.focus_text_ky
       }
-      await api.post(`/admin/tracker/templates/${selectedTemplate}/days?habit_ids=${dayForm.habit_ids.join(',')}`, dayData)
+      // Отправляем habit_ids через query params в axios
+      const config = dayForm.habit_ids.length > 0 
+        ? { params: { habit_ids: dayForm.habit_ids } }
+        : {}
+      await api.post(`/admin/tracker/templates/${selectedTemplate}/days`, dayData, config)
       setShowDayForm(false)
       setDayForm({ day_number: 1, focus_text: '', focus_text_ru: '', focus_text_ky: '', habit_ids: [] })
       loadTemplateDays(selectedTemplate)
+      onRefresh() // Обновляем весь список
     } catch (error) {
       console.error('Failed to create day:', error)
       alert(language === 'ru' ? 'Ошибка при создании дня' : language === 'ky' ? 'Күн түзүүдө ката' : 'Error creating day')
@@ -1211,13 +1231,14 @@ const TrackerManagement = ({
         focus_text_ru: dayForm.focus_text_ru,
         focus_text_ky: dayForm.focus_text_ky
       }
-      // API принимает habit_ids как query параметр
-      const habitIdsParam = dayForm.habit_ids.length > 0 ? `?habit_ids=${dayForm.habit_ids.join(',')}` : ''
-      await api.put(`/admin/tracker/days/${editingDay.id}${habitIdsParam}`, dayData)
+      // Отправляем habit_ids через query params в axios (всегда, даже если пустой список)
+      const config = { params: { habit_ids: dayForm.habit_ids } }
+      await api.put(`/admin/tracker/days/${editingDay.id}`, dayData, config)
       setEditingDay(null)
       setShowDayForm(false)
       setDayForm({ day_number: 1, focus_text: '', focus_text_ru: '', focus_text_ky: '', habit_ids: [] })
       loadTemplateDays(selectedTemplate)
+      onRefresh() // Обновляем весь список
     } catch (error) {
       console.error('Failed to update day:', error)
       alert(language === 'ru' ? 'Ошибка при обновлении дня' : language === 'ky' ? 'Күндү жаңылоодо ката' : 'Error updating day')
@@ -1259,15 +1280,162 @@ const TrackerManagement = ({
     }
   }
 
+  const loadProgramTemplates = async () => {
+    try {
+      console.log('[loadProgramTemplates] Fetching templates...')
+      const response = await api.get('/admin/tracker/templates')
+      const templates = response.data || []
+      console.log(`[loadProgramTemplates] Received ${templates.length} templates:`, templates.map(t => `${t.id}: ${t.name} (active: ${t.is_active})`))
+      setProgramTemplates(templates)
+      return templates
+    } catch (error) {
+      console.error('[loadProgramTemplates] Failed to load program templates:', error)
+      console.error('[loadProgramTemplates] Error details:', error.response?.data || error.message)
+      setProgramTemplates([])
+      return []
+    }
+  }
+
+  const loadAllProgramDays = async () => {
+    try {
+      // Сначала загружаем шаблоны, если их ещё нет
+      let templates = programTemplates
+      if (!templates || templates.length === 0) {
+        console.log('[loadAllProgramDays] Templates not loaded, loading...')
+        templates = await loadProgramTemplates()
+      }
+      
+      // Фильтруем только активные шаблоны
+      const activeTemplates = templates.filter(t => t.is_active)
+      
+      if (activeTemplates.length === 0) {
+        console.log('[loadAllProgramDays] No active templates found')
+        setAllProgramDays([])
+        return
+      }
+      
+      console.log(`[loadAllProgramDays] Loading days from ${activeTemplates.length} active templates:`, activeTemplates.map(t => `${t.id}: ${t.name}`))
+      
+      // Загружаем дни из всех активных программ
+      const daysPromises = activeTemplates.map(async (template) => {
+        try {
+          console.log(`[loadAllProgramDays] Fetching days for template ${template.id} (${template.name})...`)
+          const response = await api.get(`/admin/tracker/templates/${template.id}/days/simple`)
+          const days = response.data || []
+          console.log(`[loadAllProgramDays] ✅ Loaded ${days.length} days from template ${template.id} (${template.name})`, days)
+          return days.map(day => ({
+            ...day,
+            program_id: template.id,
+            program_name: template.name
+          }))
+        } catch (error) {
+          console.error(`[loadAllProgramDays] ❌ Failed to load days for template ${template.id}:`, error)
+          console.error(`[loadAllProgramDays] Error response:`, error.response?.data || error.message)
+          console.error(`[loadAllProgramDays] Error status:`, error.response?.status)
+          return []
+        }
+      })
+      
+      const allDaysArrays = await Promise.all(daysPromises)
+      const allDays = allDaysArrays.flat()
+      console.log(`[loadAllProgramDays] ✅ Total days loaded: ${allDays.length}`)
+      if (allDays.length > 0) {
+        console.log('[loadAllProgramDays] Days sample:', allDays.slice(0, 3).map(d => `Day ${d.day_number} from ${d.program_name}`))
+      }
+      setAllProgramDays(allDays)
+    } catch (error) {
+      console.error('[loadAllProgramDays] ❌ Failed to load program days:', error)
+      console.error('[loadAllProgramDays] Error details:', error.response?.data || error.message)
+      setAllProgramDays([])
+    }
+  }
+
   useEffect(() => {
     if (showDayForm) {
       loadAvailableHabits()
     }
   }, [showDayForm])
 
+  useEffect(() => {
+    const loadData = async () => {
+      if (showHabitForm) {
+        console.log('[useEffect] showHabitForm=true, loading templates and days...')
+        try {
+          // Сначала загружаем шаблоны программ
+          const templatesResponse = await api.get('/admin/tracker/templates')
+          const templates = templatesResponse.data || []
+          console.log(`[useEffect] ✅ Loaded ${templates.length} templates:`, templates.map(t => `${t.id}: ${t.name} (active: ${t.is_active})`))
+          setProgramTemplates(templates)
+          
+          // Затем загружаем дни из всех активных шаблонов
+          const activeTemplates = templates.filter(t => t.is_active)
+          console.log(`[useEffect] Found ${activeTemplates.length} active templates`)
+          
+          if (activeTemplates.length > 0) {
+            const daysPromises = activeTemplates.map(async (template) => {
+              try {
+                console.log(`[useEffect] Fetching days for template ${template.id} (${template.name})...`)
+                const response = await api.get(`/admin/tracker/templates/${template.id}/days/simple`)
+                const days = response.data || []
+                console.log(`[useEffect] ✅ Loaded ${days.length} days from template ${template.id} (${template.name}):`, days)
+                return days.map(day => ({
+                  ...day,
+                  program_id: template.id,
+                  program_name: template.name
+                }))
+              } catch (error) {
+                console.error(`[useEffect] ❌ Failed to load days for template ${template.id}:`, error)
+                console.error(`[useEffect] Error response:`, error.response?.data || error.message)
+                console.error(`[useEffect] Error status:`, error.response?.status)
+                return []
+              }
+            })
+            
+            const allDaysArrays = await Promise.all(daysPromises)
+            const allDays = allDaysArrays.flat()
+            console.log(`[useEffect] ✅ Total days loaded: ${allDays.length}`)
+            if (allDays.length > 0) {
+              console.log('[useEffect] Days sample:', allDays.slice(0, 5).map(d => `Day ${d.day_number} from ${d.program_name} (id=${d.id})`))
+            }
+            setAllProgramDays(allDays)
+          } else {
+            console.log('[useEffect] No active templates found')
+            setAllProgramDays([])
+          }
+        } catch (error) {
+          console.error('[useEffect] ❌ Failed to load templates or days:', error)
+          console.error('[useEffect] Error details:', error.response?.data || error.message)
+          setAllProgramDays([])
+        }
+      } else {
+        // Сбрасываем данные при закрытии формы
+        console.log('[useEffect] showHabitForm=false, clearing data...')
+        setAllProgramDays([])
+        setSelectedDayIds([])
+        setSelectedProgramsForDays([])
+      }
+    }
+    loadData()
+  }, [showHabitForm])
+
+  // Фильтруем дни по выбранным программам (множественный выбор)
+  const filteredDays = useMemo(() => {
+    if (selectedProgramsForDays.length > 0) {
+      return allProgramDays.filter(day => selectedProgramsForDays.includes(day.program_id))
+    }
+    return allProgramDays
+  }, [allProgramDays, selectedProgramsForDays])
+
   const handleCreateHabit = async () => {
     try {
-      await api.post('/admin/tracker/habits', habitForm)
+      const formData = { ...habitForm }
+      
+      // Отправляем habit и day_ids через query params в axios
+      const config = selectedDayIds.length > 0 
+        ? { params: { day_ids: selectedDayIds } }
+        : {}
+      await api.post('/admin/tracker/habits', formData, config)
+      
       setShowHabitForm(false)
       setHabitForm({
         category: 'face',
@@ -1278,6 +1446,8 @@ const TrackerManagement = ({
         description_ru: '',
         description_ky: ''
       })
+      setSelectedDayIds([])
+      setSelectedProgramForDays(null)
       onRefresh()
     } catch (error) {
       console.error('Failed to create habit:', error)
@@ -1287,7 +1457,13 @@ const TrackerManagement = ({
 
   const handleUpdateHabit = async () => {
     try {
-      await api.put(`/admin/tracker/habits/${editingHabit.id}`, habitForm)
+      const formData = { ...habitForm }
+      
+      // Отправляем habit и day_ids через query params в axios
+      // Отправляем day_ids всегда, даже если список пустой (чтобы удалить все связи)
+      const config = { params: { day_ids: selectedDayIds } }
+      await api.put(`/admin/tracker/habits/${editingHabit.id}`, formData, config)
+      
       setEditingHabit(null)
       setShowHabitForm(false)
       setHabitForm({
@@ -1299,6 +1475,8 @@ const TrackerManagement = ({
         description_ru: '',
         description_ky: ''
       })
+      setSelectedDayIds([])
+      setSelectedProgramsForDays([])
       onRefresh()
     } catch (error) {
       console.error('Failed to update habit:', error)
@@ -1306,21 +1484,8 @@ const TrackerManagement = ({
     }
   }
 
-  const handleDeleteHabit = async (habitId) => {
-    const confirmMsg = language === 'ru' ? 'Вы уверены, что хотите деактивировать эту привычку?' : 
-                     language === 'ky' ? 'Бул кылык-жорукту деактивдештирүүнү каалайсызбы?' :
-                     'Are you sure you want to deactivate this habit?'
-    if (!window.confirm(confirmMsg)) return
-    try {
-      await api.delete(`/admin/tracker/habits/${habitId}`)
-      onRefresh()
-    } catch (error) {
-      console.error('Failed to delete habit:', error)
-      alert('Ошибка при удалении привычки')
-    }
-  }
 
-  const handleEditHabit = (habit) => {
+  const handleEditHabit = async (habit) => {
     setEditingHabit(habit)
     setHabitForm({
       category: habit.category,
@@ -1331,16 +1496,79 @@ const TrackerManagement = ({
       description_ru: habit.description_ru || '',
       description_ky: habit.description_ky || ''
     })
+    
+    // Убеждаемся, что дни загружены
+    if (allProgramDays.length === 0 && programTemplates.length > 0) {
+      await loadAllProgramDays()
+    }
+    
+    // Загружаем привязанные дни, если привычка уже имеет day_ids
+    // day_ids приходит из backend при загрузке списка привычек
+    if (habit.day_ids && Array.isArray(habit.day_ids) && habit.day_ids.length > 0) {
+      setSelectedDayIds([...habit.day_ids])
+      // Определяем программы из выбранных дней для удобства
+      // Используем загруженные дни или загружаем их, если нужно
+      let daysToCheck = allProgramDays
+      if (daysToCheck.length === 0) {
+        // Загружаем дни из всех программ
+        const templates = programTemplates.filter(t => t.is_active)
+        for (const template of templates) {
+          try {
+            const response = await api.get(`/admin/tracker/templates/${template.id}/days/simple`)
+            const days = response.data.map(day => ({
+              ...day,
+              program_id: template.id,
+              program_name: template.name
+            }))
+            daysToCheck = [...daysToCheck, ...days]
+          } catch (e) {
+            console.error('Failed to load days for template:', template.id)
+          }
+        }
+        setAllProgramDays(daysToCheck)
+      }
+      
+      const daysFromHabit = daysToCheck.filter(d => habit.day_ids.includes(d.id))
+      if (daysFromHabit.length > 0) {
+        // Определяем программы из выбранных дней для множественного выбора
+        const programIds = [...new Set(daysFromHabit.map(d => d.program_id))]
+        setSelectedProgramsForDays(programIds)
+      } else {
+        setSelectedProgramsForDays([])
+      }
+    } else {
+      setSelectedDayIds([])
+      setSelectedProgramsForDays([])
+    }
+    
     setShowHabitForm(true)
   }
 
-  const handleActivateTemplate = async (templateId) => {
+  const handleToggleTemplateActive = async (templateId, isActive) => {
     try {
-      await api.post(`/admin/tracker/templates/${templateId}/activate`)
+      if (isActive) {
+        await api.post(`/admin/tracker/templates/${templateId}/deactivate`)
+      } else {
+        await api.post(`/admin/tracker/templates/${templateId}/activate`)
+      }
       onRefresh()
     } catch (error) {
-      console.error('Failed to activate template:', error)
-      alert('Ошибка при активации шаблона')
+      console.error('Failed to toggle template active status:', error)
+      alert(language === 'ru' ? 'Ошибка при изменении статуса шаблона' : language === 'ky' ? 'Шаблон статусун өзгөртүүдө ката' : 'Error toggling template status')
+    }
+  }
+
+  const handleToggleHabitActive = async (habitId, isActive) => {
+    try {
+      if (isActive) {
+        await api.post(`/admin/tracker/habits/${habitId}/deactivate`)
+      } else {
+        await api.post(`/admin/tracker/habits/${habitId}/activate`)
+      }
+      onRefresh()
+    } catch (error) {
+      console.error('Failed to toggle habit active status:', error)
+      alert(language === 'ru' ? 'Ошибка при изменении статуса привычки' : language === 'ky' ? 'Кылык-жорук статусун өзгөртүүдө ката' : 'Error toggling habit status')
     }
   }
 
@@ -1385,6 +1613,8 @@ const TrackerManagement = ({
                   description_ru: '',
                   description_ky: ''
                 })
+                setSelectedDayIds([])
+                setSelectedProgramsForDays([])
                 setShowHabitForm(true)
               }}
               className="btn-primary"
@@ -1415,6 +1645,196 @@ const TrackerManagement = ({
                       <option value="lifestyle">{t('tracker.categories.lifestyle')}</option>
                       <option value="focus">{t('tracker.categories.focus')}</option>
                     </select>
+                  </div>
+                  <div className="form-group">
+                    <label>{language === 'ru' ? 'Фильтр по программам (множественный выбор, опционально)' : language === 'ky' ? 'Программалар боюнча фильтр (көптөгөн тандоо, милдеттүү эмес)' : 'Filter by programs (multiple select, optional)'}</label>
+                    <div style={{ 
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      maxHeight: '150px',
+                      overflowY: 'auto',
+                      backgroundColor: '#fafafa'
+                    }}>
+                      {programTemplates.length === 0 ? (
+                        <div style={{ padding: '0.5rem', color: '#999', fontSize: '0.9rem' }}>
+                          {language === 'ru' ? 'Загрузка программ...' : language === 'ky' ? 'Программаларды жүктөө...' : 'Loading programs...'}
+                        </div>
+                      ) : (
+                        <>
+                          <label style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', cursor: 'pointer' }}>
+                            <input
+                              type="checkbox"
+                              checked={selectedProgramsForDays.length === 0}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedProgramsForDays([])
+                                }
+                              }}
+                              style={{ marginRight: '8px' }}
+                            />
+                            <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>
+                              {language === 'ru' ? 'Все программы' : language === 'ky' ? 'Бардык программалар' : 'All programs'}
+                            </span>
+                          </label>
+                          {programTemplates.map((template) => (
+                            <label 
+                              key={template.id} 
+                              style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                marginBottom: '6px',
+                                cursor: 'pointer',
+                                padding: '4px'
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedProgramsForDays.includes(template.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedProgramsForDays([...selectedProgramsForDays, template.id])
+                                  } else {
+                                    setSelectedProgramsForDays(selectedProgramsForDays.filter(id => id !== template.id))
+                                  }
+                                }}
+                                style={{ marginRight: '8px' }}
+                              />
+                              <span style={{ fontSize: '0.9rem' }}>
+                                {template.name}
+                                <span style={{ 
+                                  marginLeft: '8px', 
+                                  fontSize: '0.75rem', 
+                                  color: template.is_active ? '#22c55e' : '#999',
+                                  fontWeight: '500'
+                                }}>
+                                  {template.is_active ? (language === 'ru' ? '(Активна)' : language === 'ky' ? '(Активдүү)' : '(Active)') : (language === 'ru' ? '(Неактивна)' : language === 'ky' ? '(Активдүү эмес)' : '(Inactive)')}
+                                </span>
+                              </span>
+                            </label>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label>{language === 'ru' ? 'Дни программ (можно выбрать дни из разных программ)' : language === 'ky' ? 'Программалардын күндөрү (ар түрдүү программалардан күндөрдү тандоого болот)' : 'Program Days (can select days from different programs)'}</label>
+                    {allProgramDays.length === 0 ? (
+                      <div style={{ padding: '1rem', textAlign: 'center', color: '#999' }}>
+                        {programTemplates.length === 0 ? (
+                          language === 'ru' ? 'Загрузка программ...' : language === 'ky' ? 'Программаларды жүктөө...' : 'Loading programs...'
+                        ) : programTemplates.filter(t => t.is_active).length === 0 ? (
+                          language === 'ru' 
+                            ? 'Нет активных программ. Создайте программу в разделе "Шаблоны".' 
+                            : language === 'ky' 
+                            ? 'Активдүү программалар жок. "Шаблондор" бөлүмүндө программа түзүңүз.' 
+                            : 'No active programs. Create a program in the Templates section.'
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+                            <span style={{ color: '#999' }}>
+                              {language === 'ru' 
+                                ? 'Нет дней в активных программах. Создайте дни в разделе "Шаблоны".' 
+                                : language === 'ky' 
+                                ? 'Активдүү программаларда күндөр жок. "Шаблондор" бөлүмүндө күндөрдү түзүңүз.' 
+                                : 'No days in active programs. Create days in the Templates section.'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowHabitForm(false)
+                                setSubTab('templates')
+                                setTimeout(() => {
+                                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                                }, 100)
+                              }}
+                              className="btn-primary"
+                              style={{ marginTop: '8px' }}
+                            >
+                              <Plus size={16} style={{ marginRight: '6px' }} />
+                              {language === 'ru' ? 'Перейти в раздел "Шаблоны"' : language === 'ky' ? '"Шаблондор" бөлүмүнө өтүү' : 'Go to Templates section'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : filteredDays.length === 0 && selectedProgramsForDays.length > 0 ? (
+                      <div style={{ padding: '1rem', textAlign: 'center', color: '#999' }}>
+                        {language === 'ru' 
+                          ? 'В выбранных программах нет дней.' 
+                          : language === 'ky' 
+                          ? 'Тандалган программаларда күндөр жок.' 
+                          : 'No days in selected programs.'}
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
+                          gap: '8px',
+                          maxHeight: '300px',
+                          overflowY: 'auto',
+                          padding: '12px',
+                          border: '1px solid #e0e0e0',
+                          borderRadius: '8px',
+                          backgroundColor: '#fafafa'
+                        }}>
+                          {filteredDays.map((day) => (
+                            <label 
+                              key={day.id} 
+                              style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column',
+                                alignItems: 'flex-start',
+                                cursor: 'pointer',
+                                padding: '8px',
+                                borderRadius: '6px',
+                                backgroundColor: selectedDayIds.includes(day.id) ? '#fff5f8' : '#fff',
+                                border: selectedDayIds.includes(day.id) ? '2px solid #ff6b9d' : '1px solid #e0e0e0',
+                                transition: 'all 0.2s'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedDayIds.includes(day.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedDayIds([...selectedDayIds, day.id])
+                                    } else {
+                                      setSelectedDayIds(selectedDayIds.filter(id => id !== day.id))
+                                    }
+                                  }}
+                                  style={{ marginRight: '6px' }}
+                                />
+                                <span style={{ fontWeight: '600', fontSize: '0.95rem' }}>
+                                  {language === 'ru' ? `День ${day.day_number}` : language === 'ky' ? `${day.day_number} күн` : `Day ${day.day_number}`}
+                                </span>
+                              </div>
+                              {day.program_name && (
+                                <small style={{ 
+                                  color: '#999', 
+                                  fontSize: '0.8rem',
+                                  marginTop: '4px',
+                                  marginLeft: '22px'
+                                }}>
+                                  {day.program_name}
+                                </small>
+                              )}
+                            </label>
+                          ))}
+                        </div>
+                        {selectedDayIds.length > 0 && (
+                          <div style={{ marginTop: '8px', padding: '8px', backgroundColor: '#f0f0f0', borderRadius: '6px' }}>
+                            <small style={{ color: '#666', fontWeight: '500' }}>
+                              {language === 'ru' 
+                                ? `✓ Выбрано дней: ${selectedDayIds.length}` 
+                                : language === 'ky' 
+                                ? `✓ Тандалган күндөр: ${selectedDayIds.length}`
+                                : `✓ Selected days: ${selectedDayIds.length}`}
+                            </small>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                   <div className="form-group">
                     <label>{language === 'ru' ? 'Название (EN)' : language === 'ky' ? 'Аталышы (EN)' : 'Title (EN)'}</label>
@@ -1489,9 +1909,10 @@ const TrackerManagement = ({
           <div className="table-container">
             <table className="admin-table">
               <thead>
-                <tr>
+                  <tr>
                   <th>ID</th>
                   <th>{language === 'ru' ? 'Категория' : language === 'ky' ? 'Категория' : 'Category'}</th>
+                  <th>{language === 'ru' ? 'Программы' : language === 'ky' ? 'Программалар' : 'Programs'}</th>
                   <th>{language === 'ru' ? 'Название (EN)' : language === 'ky' ? 'Аталышы (EN)' : 'Title (EN)'}</th>
                   <th>{language === 'ru' ? 'Название (RU)' : language === 'ky' ? 'Аталышы (RU)' : 'Title (RU)'}</th>
                   <th>{t('common.status')}</th>
@@ -1512,12 +1933,52 @@ const TrackerManagement = ({
                       <td>
                         <span className="category-badge">{getCategoryName(habit.category)}</span>
                       </td>
+                      <td>
+                        {habit.programs && habit.programs.length > 0 ? (
+                          <div style={{ fontSize: '0.9rem' }}>
+                            {habit.programs.map((prog, idx) => (
+                              <div key={prog.id} style={{ 
+                                color: '#666', 
+                                marginBottom: idx < habit.programs.length - 1 ? '4px' : '0',
+                                padding: '2px 6px',
+                                backgroundColor: '#f0f0f0',
+                                borderRadius: '4px',
+                                display: 'inline-block',
+                                marginRight: '4px'
+                              }}>
+                                {prog.name}
+                              </div>
+                            ))}
+                            {habit.day_ids && habit.day_ids.length > 0 && (
+                              <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '6px' }}>
+                                {language === 'ru' 
+                                  ? `${habit.day_ids.length} ${habit.day_ids.length === 1 ? 'день' : 'дней'}` 
+                                  : language === 'ky' 
+                                  ? `${habit.day_ids.length} ${habit.day_ids.length === 1 ? 'күн' : 'күн'}`
+                                  : `${habit.day_ids.length} ${habit.day_ids.length === 1 ? 'day' : 'days'}`}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: '0.9rem', color: '#999' }}>
+                            {language === 'ru' ? 'Не привязана' : language === 'ky' ? 'Байланышпаган' : 'Not assigned'}
+                          </span>
+                        )}
+                      </td>
                       <td>{habit.title}</td>
                       <td>{habit.title_ru || '-'}</td>
                       <td>
-                        <span className={habit.is_active ? 'status-active' : 'status-inactive'}>
-                          {habit.is_active ? t('common.active') : t('common.inactive')}
-                        </span>
+                        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
+                          <input
+                            type="checkbox"
+                            checked={habit.is_active}
+                            onChange={(e) => handleToggleHabitActive(habit.id, habit.is_active)}
+                            style={{ cursor: 'pointer', width: '18px', height: '18px' }}
+                          />
+                          <span className={habit.is_active ? 'status-active' : 'status-inactive'}>
+                            {habit.is_active ? t('common.active') : t('common.inactive')}
+                          </span>
+                        </label>
                       </td>
                       <td>
                         <div className="action-buttons">
@@ -1527,13 +1988,6 @@ const TrackerManagement = ({
                             title={t('common.edit')}
                           >
                             <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteHabit(habit.id)}
-                            className="btn-icon btn-danger"
-                            title={t('admin.deactivate')}
-                          >
-                            <Trash2 size={16} />
                           </button>
                         </div>
                       </td>
@@ -1564,7 +2018,7 @@ const TrackerManagement = ({
             <button
               onClick={() => {
                 setEditingTemplate(null)
-                setTemplateForm({ name: '', version: 1 })
+                setTemplateForm({ name: '', description: '', description_ru: '', description_ky: '', days_count: 30, version: 1 })
                 setShowTemplateForm(true)
               }}
               className="btn-primary"
@@ -1597,11 +2051,20 @@ const TrackerManagement = ({
                     <tr key={template.id}>
                       <td>{template.id}</td>
                       <td>{template.name}</td>
+                      <td>{template.days_count || 30}</td>
                       <td>v{template.version}</td>
                       <td>
-                        <span className={template.is_active ? 'status-active' : 'status-inactive'}>
-                          {template.is_active ? t('common.active') : t('common.inactive')}
-                        </span>
+                        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
+                          <input
+                            type="checkbox"
+                            checked={template.is_active}
+                            onChange={(e) => handleToggleTemplateActive(template.id, template.is_active)}
+                            style={{ cursor: 'pointer', width: '18px', height: '18px' }}
+                          />
+                          <span className={template.is_active ? 'status-active' : 'status-inactive'}>
+                            {template.is_active ? t('common.active') : t('common.inactive')}
+                          </span>
+                        </label>
                       </td>
                       <td>
                         <div className="action-buttons">
@@ -1612,15 +2075,6 @@ const TrackerManagement = ({
                           >
                             <Edit size={16} />
                           </button>
-                          {!template.is_active && (
-                            <button
-                              onClick={() => handleActivateTemplate(template.id)}
-                              className="btn-icon btn-success"
-                              title={t('admin.activate')}
-                            >
-                              <Check size={16} />
-                            </button>
-                          )}
                           <button
                             onClick={() => loadTemplateDays(template.id)}
                             className="btn-icon btn-edit"
@@ -1713,21 +2167,36 @@ const TrackerManagement = ({
                                        day.focus_text
                       return focusText && <p className="day-focus">{focusText}</p>
                     })()}
-                    {day.habits && day.habits.length > 0 && (
+                    {day.habits && day.habits.length > 0 ? (
                       <div className="day-habits">
-                        <strong>{t('tracker.habits')}:</strong>
-                        <ul>
+                        <strong>{t('tracker.habits')} ({day.habits.length}):</strong>
+                        <div className="habits-list-compact">
                           {day.habits.map((habit, idx) => {
                             const habitTitle = language === 'ru' && habit.title_ru ? habit.title_ru :
                                              language === 'ky' && habit.title_ky ? habit.title_ky :
                                              habit.title
+                            const getCategoryName = (cat) => {
+                              if (language === 'ru') {
+                                return cat === 'face' ? 'Лицо' : cat === 'body' ? 'Тело' : cat === 'lifestyle' ? 'Образ жизни' : 'Фокус'
+                              } else if (language === 'ky') {
+                                return cat === 'face' ? 'Бет' : cat === 'body' ? 'Дене' : cat === 'lifestyle' ? 'Турмуш образы' : 'Фокус'
+                              }
+                              return cat.charAt(0).toUpperCase() + cat.slice(1)
+                            }
                             return (
-                              <li key={idx}>
-                                {habitTitle}
-                              </li>
+                              <div key={idx} className="habit-item-compact">
+                                <span className="habit-category-badge">{getCategoryName(habit.category)}</span>
+                                <span className="habit-title-text">{habitTitle}</span>
+                              </div>
                             )
                           })}
-                        </ul>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="day-habits-empty">
+                        <span style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>
+                          {language === 'ru' ? 'Привычки не назначены' : language === 'ky' ? 'Кылык-жоруктар берилген жок' : 'No habits assigned'}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -1754,6 +2223,44 @@ const TrackerManagement = ({
                       value={templateForm.name}
                       onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
                       placeholder={language === 'ru' ? 'Название шаблона' : language === 'ky' ? 'Шаблондун аталышы' : 'Template name'}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>{language === 'ru' ? 'Описание (EN)' : language === 'ky' ? 'Баяндама (EN)' : 'Description (EN)'}</label>
+                    <textarea
+                      value={templateForm.description}
+                      onChange={(e) => setTemplateForm({ ...templateForm, description: e.target.value })}
+                      placeholder={language === 'ru' ? 'Описание программы на английском' : language === 'ky' ? 'Англис тилиндеги программа баяндамасы' : 'Program description in English'}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>{language === 'ru' ? 'Описание (RU)' : language === 'ky' ? 'Баяндама (RU)' : 'Description (RU)'}</label>
+                    <textarea
+                      value={templateForm.description_ru}
+                      onChange={(e) => setTemplateForm({ ...templateForm, description_ru: e.target.value })}
+                      placeholder={language === 'ru' ? 'Описание программы на русском' : language === 'ky' ? 'Орус тилиндеги программа баяндамасы' : 'Program description in Russian'}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>{language === 'ru' ? 'Описание (KY)' : language === 'ky' ? 'Баяндама (KY)' : 'Description (KY)'}</label>
+                    <textarea
+                      value={templateForm.description_ky}
+                      onChange={(e) => setTemplateForm({ ...templateForm, description_ky: e.target.value })}
+                      placeholder={language === 'ru' ? 'Описание программы на кыргызском' : language === 'ky' ? 'Кыргыз тилиндеги программа баяндамасы' : 'Program description in Kyrgyz'}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>{language === 'ru' ? 'Количество дней' : language === 'ky' ? 'Күндөрдүн саны' : 'Days Count'}</label>
+                    <input
+                      type="number"
+                      value={templateForm.days_count}
+                      onChange={(e) => setTemplateForm({ ...templateForm, days_count: Number(e.target.value) })}
+                      min="1"
+                      max="365"
+                      placeholder="30"
                     />
                   </div>
                   <div className="form-group">

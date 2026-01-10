@@ -7,7 +7,7 @@ from app.routers import auth, users, services, bookings, reviews, admin, profess
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Tunuk",
+    title="Suluu",
     description="Beauty Services",
     version="1.0.0"
 )
@@ -33,7 +33,7 @@ app.include_router(client.router, prefix="/api/client", tags=["client"])
 
 @app.get("/")
 async def root():
-    return {"message": "Tunuk API - Beauty Services"}
+    return {"message": "Suluu API - Beauty Services"}
 
 @app.get("/api/health")
 async def health_check():

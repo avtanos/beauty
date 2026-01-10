@@ -17,6 +17,8 @@ import ProfessionalCabinet from './pages/ProfessionalCabinet'
 import ClientCabinet from './pages/ClientCabinet'
 import BeautyTracker from './pages/BeautyTracker'
 import TrackerPage from './pages/TrackerPage'
+import News from './pages/News'
+import Products from './pages/Products'
 import ProtectedRoute from './components/ProtectedRoute'
 import MockDataToggle from './components/MockDataToggle'
 import './App.css'
@@ -35,6 +37,10 @@ function App() {
               <Route path="/professionals" element={<Professionals />} />
               <Route path="/professionals/:id" element={<ProfessionalDetail />} />
               <Route path="/beauty-tracker" element={<BeautyTracker />} />
+              <Route path="/news" element={<News />} />
+              <Route path="/news/blog/:id" element={<News />} />
+              <Route path="/shop" element={<Products />} />
+              <Route path="/shop/:id" element={<Products />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route

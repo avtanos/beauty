@@ -36,12 +36,31 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 def authenticate_user(db: Session, email: str, password: str):
-    user = db.query(models.User).filter(models.User.email == email).first()
-    if not user:
+    try:
+        user = db.query(models.User).filter(models.User.email == email).first()
+        if not user:
+            print(f"User not found: {email}")
+            return False
+        if not user.hashed_password:
+            print(f"User {email} has no password hash")
+            return False
+        try:
+            is_valid = verify_password(password, user.hashed_password)
+            if not is_valid:
+                print(f"Invalid password for user: {email}")
+                return False
+            print(f"User {email} authenticated successfully")
+            return user
+        except Exception as e:
+            print(f"Password verification error for {email}: {e}")
+            import traceback
+            print(traceback.format_exc())
+            return False
+    except Exception as e:
+        print(f"Database error during authentication for {email}: {e}")
+        import traceback
+        print(traceback.format_exc())
         return False
-    if not verify_password(password, user.hashed_password):
-        return False
-    return user
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -67,7 +86,30 @@ async def get_current_user(
 async def get_current_active_user(
     current_user: models.User = Depends(get_current_user)
 ):
-    if not current_user.is_active:
+    if current_user.is_active is False:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+async def get_current_user_optional(
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+) -> Optional[models.User]:
+    """
+    Optional authentication - returns user if token is valid, None otherwise.
+    Does not raise exception if token is missing or invalid.
+    """
+    if not token:
+        return None
+    
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+    except JWTError:
+        return None
+    
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if user is None or user.is_active is False:
+        return None
+    return user

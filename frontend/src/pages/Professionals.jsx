@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useLanguage } from '../contexts/LanguageContext'
 import api from '../services/api'
+import SEO from '../components/SEO'
 import './Professionals.css'
 
 const Professionals = () => {
+  const { t } = useLanguage()
   const [professionals, setProfessionals] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -22,19 +25,46 @@ const Professionals = () => {
     }
   }
 
+  const baseUrl = window.location.origin
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": professionals.slice(0, 10).map((prof, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Person",
+        "name": prof.full_name,
+        "jobTitle": "Beauty Professional",
+        "aggregateRating": prof.rating ? {
+          "@type": "AggregateRating",
+          "ratingValue": prof.rating,
+          "ratingCount": prof.total_reviews || 0
+        } : undefined
+      }
+    }))
+  }
+
   return (
     <div className="professionals-page">
+      <SEO
+        title={t('seo.professionals.title')}
+        description={t('seo.professionals.description')}
+        keywords={t('seo.professionals.keywords')}
+        type="website"
+        schema={schema}
+      />
       <div className="container">
-        <h1 className="page-title">Наши мастера</h1>
+        <h1 className="page-title">{t('professionals.title')}</h1>
         <p className="page-subtitle">
-          Все мастера имеют рейтинг выше 4.8
+          {t('home.highRatingDesc')}
         </p>
 
         {loading ? (
-          <div className="loading">Загрузка...</div>
+          <div className="loading">{t('common.loading')}</div>
         ) : professionals.length === 0 ? (
           <div className="empty-state">
-            <p>Мастера не найдены</p>
+            <p>{t('common.error')}</p>
           </div>
         ) : (
           <div className="professionals-grid">

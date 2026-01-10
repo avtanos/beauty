@@ -26,7 +26,8 @@ def init_data():
         phone="+996555111111",
         full_name="Айгуль Абдыкадырова",
         hashed_password=get_password_hash("password123"),
-        role=UserRole.CLIENT
+        role=UserRole.CLIENT,
+        is_active=True
     )
     
     client2 = User(
@@ -34,7 +35,8 @@ def init_data():
         phone="+996555222222",
         full_name="Нурбек Токтошев",
         hashed_password=get_password_hash("password123"),
-        role=UserRole.CLIENT
+        role=UserRole.CLIENT,
+        is_active=True
     )
     
     # Администратор
@@ -43,7 +45,8 @@ def init_data():
         phone="+996555000000",
         full_name="Администратор Системы",
         hashed_password=get_password_hash("admin123"),
-        role=UserRole.ADMIN
+        role=UserRole.ADMIN,
+        is_active=True
     )
 
     # Мастера
@@ -57,6 +60,7 @@ def init_data():
         total_reviews=25,
         bio="Опытный мастер по маникюру и педикюру с 5-летним стажем. Специализируюсь на классическом и дизайнерском маникюре.",
         experience_years=5,
+        is_active=True
     )
 
     professional2 = User(
@@ -69,6 +73,7 @@ def init_data():
         total_reviews=18,
         bio="Профессиональный массажист. Предлагаю различные виды массажа: классический, расслабляющий, лечебный.",
         experience_years=7,
+        is_active=True
     )
 
     professional3 = User(
@@ -81,6 +86,7 @@ def init_data():
         total_reviews=32,
         bio="Визажист и стилист. Создаю образы для особых случаев: свадьбы, фотосессии, вечеринки.",
         experience_years=6,
+        is_active=True
     )
 
     professional4 = User(
@@ -93,6 +99,7 @@ def init_data():
         total_reviews=20,
         bio="Парикмахер-стилист. Мужские и женские стрижки, укладки, окрашивание.",
         experience_years=4,
+        is_active=True
     )
 
     db.add_all([client1, client2, admin, professional1, professional2, professional3, professional4])

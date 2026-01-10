@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="container">
         <div className="footer-content">
           <div className="footer-section">
-            <h3>Tunuk</h3>
+            <h3>Suluu</h3>
             <p>Beauty Services</p>
           </div>
           
@@ -27,7 +27,7 @@ const Footer = () => {
         </div>
         
         <div className="footer-bottom">
-          <p>&copy; 2024 Tunuk. Все права защищены.</p>
+          <p>&copy; 2024 Suluu. Все права защищены.</p>
         </div>
       </div>
     </footer>

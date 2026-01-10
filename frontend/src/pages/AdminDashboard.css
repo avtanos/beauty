@@ -673,26 +673,54 @@
 
 .day-habits {
   margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
 }
 
 .day-habits strong {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   color: var(--text-dark);
+  font-size: 0.95rem;
 }
 
-.day-habits ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.day-habits-empty {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
 }
 
-.day-habits li {
+.habits-list-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.habit-item-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0.5rem;
-  margin-bottom: 0.25rem;
-  background: var(--white);
+  background: var(--bg-light);
   border-radius: 6px;
   font-size: 0.9rem;
+}
+
+.habit-category-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: var(--primary-color);
+  color: var(--white);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.habit-title-text {
+  color: var(--text-dark);
+  flex: 1;
 }
 
 /* Template Management Styles */

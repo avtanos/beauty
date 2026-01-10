@@ -5,6 +5,8 @@ export const translations = {
       services: "Services",
       professionals: "Professionals",
       beautyTracker: "Beauty Tracker",
+      news: "Useful",
+      shop: "Shop",
       myCabinet: "My Cabinet",
       masterCabinet: "Master Cabinet",
       adminPanel: "Admin Panel",
@@ -40,7 +42,7 @@ export const translations = {
     },
     // Home
     home: {
-      title: "Tunuk - Beauty Services Platform",
+      title: "Suluu - Beauty Services Platform",
       subtitle: "Home beauty services in Central Asia",
       description: "Platform for home beauty services offering mobile salon, spa, evening makeup, massage, haircut, nail care and other household services.",
       heroTitle: "Professional Home Services",
@@ -95,7 +97,7 @@ export const translations = {
         spa: "Spa",
         massage: "Massage",
         haircut: "Haircut",
-        nailCare: "Nail Care",
+        nail_care: "Nail Care",
         cleaning: "Cleaning",
         repair: "Repair",
         other: "Other"
@@ -224,6 +226,58 @@ export const translations = {
       bookings: "Bookings",
       reviews: "Reviews",
       tracker: "Beauty Tracker"
+    },
+    // News (Useful)
+    news: {
+      title: "Useful",
+      all: "All",
+      allContent: "All",
+      news: "News",
+      blog: "Blog",
+      noItems: "No content found",
+      readMore: "Read more →"
+    },
+    // Shop
+    shop: {
+      title: "Shop",
+      all: "All",
+      noProducts: "No products found",
+      seller: "Seller",
+      inStock: "In stock",
+      outOfStock: "Out of stock"
+    },
+    // SEO
+    seo: {
+      home: {
+        title: "Suluu - Professional Home Beauty Services in Central Asia",
+        description: "Book professional beauty services at home. Mobile salon, spa, massage, haircut, nail care. Over 4.8 rated masters. Available in Kyrgyzstan, Kazakhstan, and Central Asia.",
+        keywords: "beauty services, home salon, mobile spa, massage, haircut, nail care, Central Asia, Kyrgyzstan, Kazakhstan, beauty professionals"
+      },
+      services: {
+        title: "Beauty Services - Suluu",
+        description: "Browse our wide range of professional beauty services: salon, spa, massage, haircut, nail care and more. Book services at your home.",
+        keywords: "beauty services, salon services, spa, massage, haircut, nail care, home services"
+      },
+      professionals: {
+        title: "Professional Masters - Suluu",
+        description: "Find highly-rated professional beauty masters. All masters have rating above 4.8. Book services with trusted professionals.",
+        keywords: "beauty masters, professional stylists, beauty experts, rated professionals, trusted masters"
+      },
+      news: {
+        title: "Beauty News & Blog - Suluu",
+        description: "Read latest beauty tips, trends, and news. Expert advice on skincare, haircare, and wellness.",
+        keywords: "beauty tips, beauty news, skincare, haircare, wellness, beauty blog"
+      },
+      shop: {
+        title: "Beauty Products Shop - Suluu",
+        description: "Shop quality beauty products from trusted sellers. Cosmetics, skincare, haircare products available.",
+        keywords: "beauty products, cosmetics, skincare, haircare, beauty shop"
+      },
+      tracker: {
+        title: "Beauty Tracker - 30 Days Self-Care Program - Suluu",
+        description: "Start your 30-day beauty and self-care journey. Daily habits tracker for face, body, and lifestyle care.",
+        keywords: "beauty tracker, self-care, daily habits, beauty routine, wellness tracker"
+      }
     }
   },
   ru: {
@@ -232,6 +286,8 @@ export const translations = {
       services: "Услуги",
       professionals: "Мастера",
       beautyTracker: "Beauty Tracker",
+      news: "Полезное",
+      shop: "Shop",
       myCabinet: "Мой кабинет",
       masterCabinet: "Кабинет мастера",
       adminPanel: "Админ-панель",
@@ -267,11 +323,11 @@ export const translations = {
     },
     // Home
     home: {
-      title: "Tunuk - Платформа бьюти-услуг",
+      title: "Suluu - Платформа бьюти-услуг",
       subtitle: "Домашние бьюти-услуги в Центральной Азии",
       description: "Платформа для домашних бьюти-услуг, предлагающая выездной салон, спа, вечерний макияж, массаж, стрижку, уход за ногтями и другие бытовые сервисы.",
-      heroTitle: "Профессиональные услуги на дому",
-      heroSubtitle: "Более 4.8 рейтинг мастеров. Красота, спа, массаж и многое другое прямо у вас дома",
+      heroTitle: "Профессиональные бьюти-услуги на дому",
+      heroSubtitle: "Проверенные мастера и удобное бронирование",
       cta: "Найти мастера",
       selectService: "Выбрать услугу",
       findMaster: "Найти мастера",
@@ -322,7 +378,7 @@ export const translations = {
         spa: "Спа",
         massage: "Массаж",
         haircut: "Стрижка",
-        nailCare: "Уход за ногтями",
+        nail_care: "Здоровье",
         cleaning: "Уборка",
         repair: "Ремонт",
         other: "Прочее"
@@ -451,6 +507,58 @@ export const translations = {
       bookings: "Бронирования",
       reviews: "Отзывы",
       tracker: "Beauty Tracker"
+    },
+    // News (Useful)
+    news: {
+      title: "Полезное",
+      all: "Все",
+      allContent: "Все",
+      news: "Новости",
+      blog: "Блог",
+      noItems: "Контент не найден",
+      readMore: "Читать далее →"
+    },
+    // Shop
+    shop: {
+      title: "Shop",
+      all: "Все",
+      noProducts: "Товары не найдены",
+      seller: "Продавец",
+      inStock: "В наличии",
+      outOfStock: "Нет в наличии"
+    },
+    // SEO
+    seo: {
+      home: {
+        title: "Suluu - Профессиональные бьюти-услуги на дому в Центральной Азии",
+        description: "Закажите профессиональные бьюти-услуги на дому. Выездной салон, спа, массаж, стрижка, уход за ногтями. Мастера с рейтингом выше 4.8. Доступно в Кыргызстане, Казахстане и Центральной Азии.",
+        keywords: "бьюти-услуги, выездной салон, мобильный спа, массаж, стрижка, уход за ногтями, Центральная Азия, Кыргызстан, Казахстан, бьюти-мастера"
+      },
+      services: {
+        title: "Бьюти-услуги - Suluu",
+        description: "Ознакомьтесь с широким спектром профессиональных бьюти-услуг: салон, спа, массаж, стрижка, уход за ногтями и многое другое. Закажите услуги на дому.",
+        keywords: "бьюти-услуги, услуги салона, спа, массаж, стрижка, уход за ногтями, услуги на дому"
+      },
+      professionals: {
+        title: "Профессиональные мастера - Suluu",
+        description: "Найдите высокорейтинговых профессиональных бьюти-мастеров. Все мастера имеют рейтинг выше 4.8. Закажите услуги у проверенных профессионалов.",
+        keywords: "бьюти-мастера, профессиональные стилисты, эксперты красоты, рейтинговые профессионалы, проверенные мастера"
+      },
+      news: {
+        title: "Новости красоты и блог - Suluu",
+        description: "Читайте последние советы по красоте, тренды и новости. Экспертные советы по уходу за кожей, волосами и здоровью.",
+        keywords: "советы по красоте, новости красоты, уход за кожей, уход за волосами, здоровье, блог красоты"
+      },
+      shop: {
+        title: "Магазин бьюти-продуктов - Suluu",
+        description: "Покупайте качественные бьюти-продукты от проверенных продавцов. Косметика, средства по уходу за кожей и волосами в наличии.",
+        keywords: "бьюти-продукты, косметика, уход за кожей, уход за волосами, магазин красоты"
+      },
+      tracker: {
+        title: "Beauty Tracker - 30-дневная программа заботы о себе - Suluu",
+        description: "Начните свой 30-дневный путь красоты и заботы о себе. Трекер ежедневных привычек для лица, тела и образа жизни.",
+        keywords: "трекер красоты, забота о себе, ежедневные привычки, рутина красоты, трекер здоровья"
+      }
     }
   },
   ky: {
@@ -459,6 +567,8 @@ export const translations = {
       services: "Кызматтар",
       professionals: "Устаттар",
       beautyTracker: "Beauty Tracker",
+      news: "Пайдалуу",
+      shop: "Shop",
       myCabinet: "Менин кабинетим",
       masterCabinet: "Устат кабинети",
       adminPanel: "Админ панели",
@@ -494,7 +604,7 @@ export const translations = {
     },
     // Home
     home: {
-      title: "Tunuk - Сулуулук кызматтары платформасы",
+      title: "Suluu - Сулуулук кызматтары платформасы",
       subtitle: "Борбордук Азиядагы үй сулуулук кызматтары",
       description: "Үй сулуулук кызматтары үчүн платформа, мобилдик салон, спа, кечки макияж, массаж, чач кесуу, тырмак багуу жана башка үй кызматтарын сунуштайт.",
       heroTitle: "Үйдө профессионалдык кызматтар",
@@ -549,7 +659,7 @@ export const translations = {
         spa: "Спа",
         massage: "Массаж",
         haircut: "Чач кесуу",
-        nailCare: "Тырмак багуу",
+        nail_care: "Тырмак багуу",
         cleaning: "Тазалоо",
         repair: "Оңдоо",
         other: "Башка"
@@ -678,6 +788,58 @@ export const translations = {
       bookings: "Брондоолор",
       reviews: "Сын-пикирлер",
       tracker: "Beauty Tracker"
+    },
+    // News (Useful)
+    news: {
+      title: "Пайдалуу",
+      all: "Баары",
+      allContent: "Баары",
+      news: "Жаңылыктар",
+      blog: "Блог",
+      noItems: "Контент табылган жок",
+      readMore: "Кененирээк окуу →"
+    },
+    // Shop
+    shop: {
+      title: "Shop",
+      all: "Баары",
+      noProducts: "Товарлар табылган жок",
+      seller: "Сатуучу",
+      inStock: "Бар",
+      outOfStock: "Жок"
+    },
+    // SEO
+    seo: {
+      home: {
+        title: "Suluu - Борбордук Азиядагы үйдө профессионалдык сулуулук кызматтары",
+        description: "Үйдө профессионалдык сулуулук кызматтарын заказ кылыңыз. Мобилдик салон, спа, массаж, чач кесуу, тырмак багуу. 4.8ден жогору рейтингдүү устаттар. Кыргызстан, Казакстан жана Борбордук Азияда жеткиликтүү.",
+        keywords: "сулуулук кызматтары, үйгө келген салон, мобилдик спа, массаж, чач кесуу, тырмак багуу, Борбордук Азия, Кыргызстан, Казакстан, сулуулук устаттары"
+      },
+      services: {
+        title: "Сулуулук кызматтары - Suluu",
+        description: "Кеңири спектрдеги профессионалдык сулуулук кызматтарын караңыз: салон, спа, массаж, чач кесуу, тырмак багуу жана башкалар. Үйдө кызматтарды заказ кылыңыз.",
+        keywords: "сулуулук кызматтары, салон кызматтары, спа, массаж, чач кесуу, тырмак багуу, үйдө кызматтар"
+      },
+      professionals: {
+        title: "Профессионалдык устаттар - Suluu",
+        description: "Жогорку рейтингдүү профессионалдык сулуулук устаттарын табыңыз. Бардык устаттар 4.8ден жогору рейтингге ээ. Ишенимдүү профессионалдар менен кызматтарды заказ кылыңыз.",
+        keywords: "сулуулук устаттары, профессионалдык стилисттер, сулуулук эксперттери, рейтингдүү профессионалдар, ишенимдүү устаттар"
+      },
+      news: {
+        title: "Сулуулук жаңылыктары жана блогу - Suluu",
+        description: "Акыркы сулуулук кеңештерин, тренддерди жана жаңылыктарды окуңуз. Тери, чач жана ден соолук боюнча эксперттик кеңештер.",
+        keywords: "сулуулук кеңештери, сулуулук жаңылыктары, тери багуу, чач багуу, ден соолук, сулуулук блогу"
+      },
+      shop: {
+        title: "Сулуулук продукттары дүкөнү - Suluu",
+        description: "Ишенимдүү сатуучулардан сапаттуу сулуулук продукттарын сатып алыңыз. Косметика, тери багуу каражаттары, чач багуу каражаттары жеткиликтүү.",
+        keywords: "сулуулук продукттары, косметика, тери багуу, чач багуу, сулуулук дүкөнү"
+      },
+      tracker: {
+        title: "Beauty Tracker - Өзүңүзгө кам көрүүнүн 30 күндүк программасы - Suluu",
+        description: "Сулуулук жана өзүңүзгө кам көрүүнүн 30 күндүк жолуңузду баштаңыз. Бет, дене жана жашоо образы үчүн күн сайын кылык-жоруктар трекери.",
+        keywords: "сулуулук трекери, өзүңүзгө кам көрүү, күн сайын кылык-жоруктар, сулуулук рутинасы, ден соолук трекери"
+      }
     }
   }
 }

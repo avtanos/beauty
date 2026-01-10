@@ -25,7 +25,10 @@ const ClientCabinet = () => {
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' })
 
   useEffect(() => {
-    if (user?.role !== 'client') {
+    if (!user) {
+      return // Ждем загрузки пользователя
+    }
+    if (user.role !== 'client') {
       navigate('/')
       return
     }

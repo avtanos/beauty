@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
 from app import models, schemas
 from app.auth import get_current_active_user
@@ -16,7 +16,7 @@ def read_services(
     professional_id: int = None,
     db: Session = Depends(get_db)
 ):
-    query = db.query(models.Service).filter(models.Service.is_active == True)
+    query = db.query(models.Service).options(joinedload(models.Service.professional)).filter(models.Service.is_active == True)
     
     if category:
         query = query.filter(models.Service.category == category)
